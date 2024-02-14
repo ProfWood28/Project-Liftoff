@@ -7,51 +7,19 @@ public class MyGame : Game {
 	// Declare the Sprite variables:
 	EasyDraw background;
 
-	Player player;
-
-	PlayerMK2 pMK2;
-
-	Sprite platform;
-	Sprite wall;
-	Level level;
-
 	// Declare other variables:
 	SoundChannel soundTrack;
 
 	public MyGame() : base(1366, 768, false, true)     // Create a window that's 1200x800 and NOT fullscreen
 	{
-		targetFps = 20;
+		targetFps = 600;
 
 		// Create a full screen canvas (EasyDraw):
 		// (in MyGame, width and height refer to game.width and game.height: the window size)
 		background = new EasyDraw(width, height);
-		level = new Level();
-
-		pMK2 = new PlayerMK2("square.png", new Vector2(width - 300, 200), level);
-		pMK2.SetOrigin(pMK2.width / 2, pMK2.height / 2);
-
-		player = new Player(width / 2, 200, 1000f, level);
-		player.SetOrigin(player.width / 2, player.height / 2);
-
-		platform = new Sprite("checkers.png", false, true);
-		platform.SetXY(width / 2, height - 50);
-		platform.SetOrigin(platform.width / 2, platform.height / 2);
-		platform.SetScaleXY(20, 0.5f);
-		level.Add(platform);
-
-		wall = new Sprite("colors.png", false, true);
-		wall.SetOrigin(wall.width / 2, wall.height / 2);
-		wall.SetXY(300, height / 2);
-		wall.SetScaleXY(0.5f, 10);
-		level.Add(wall);
 
 		// Add all sprites to the engine, so that they will be displayed every frame:
 		// (The order that we add them is the order that they will be drawn.)
-		
-		AddChild(platform);
-		AddChild(wall);
-		AddChild(player);
-		AddChild(pMK2);
 		AddChild(background);
 
 		// Play a sound track, looping and streaming, and keep a reference to it such that
@@ -83,12 +51,9 @@ public class MyGame : Game {
 	void Update() {
 
 		background.ClearTransparent();
-		background.Text(String.Format("Player Position: ({0}, {1})", Mathf.Round(pMK2.x), Mathf.Round(pMK2.y)), 50,50);
-		background.Text(String.Format("Player Velocity: ({0}, {1})", Math.Round(pMK2.velocity.x, 2), Math.Round(pMK2.velocity.y, 2)), width-300, 50);
-		background.Text(String.Format("Target FPS: {0}", Mathf.Round(targetFps)), width-300, 100);
 		if (Time.deltaTime != 0)
 		{
-			background.Text(String.Format("Current FPS: {0}", 1000 / Time.deltaTime), width - 300, 150);
+			background.Text(String.Format("FPS: {0}", 1000 / Time.deltaTime), width - 100, 40);
 		}
 	}
 

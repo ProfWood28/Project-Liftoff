@@ -10,7 +10,7 @@ namespace GXPEngine
 {
     public class Physics
     {
-        public static float G = 8f;
+        public static float G = 0f;
         
         public static Vector2 Accel(float mass, Vector2 force)
         {

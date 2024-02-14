@@ -13,6 +13,7 @@ class PlayerMK2 : PlayerController
     {
         moveForce = 6f;
         jumpForce = 150;
+        mass = 300;
 
         x = pos.x;
         y = pos.y;
