@@ -44,7 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EntityController.cs" />
+    <Compile Include="Old Stuff\EntityController.cs" />
     <Compile Include="GXPEngine\AddOns\Camera.cs" />
     <Compile Include="GXPEngine\AddOns\Gizmos.cs" />
     <Compile Include="GXPEngine\AddOns\MouseHandler.cs" />
@@ -87,15 +87,16 @@
     <Compile Include="GXPEngine\Utils\Mathf.cs" />
     <Compile Include="GXPEngine\Utils\Time.cs" />
     <Compile Include="GXPEngine\Utils\Utils.cs" />
-    <Compile Include="Level.cs" />
+    <Compile Include="Old Stuff\Level.cs" />
     <Compile Include="MyGame.cs" />
     <Compile Include="GXPEngine\Physics.cs" />
-    <Compile Include="Player.cs" />
-    <Compile Include="PlayerController.cs" />
-    <Compile Include="PlayerMK2.cs" />
-    <Compile Include="Projectile.cs" />
+    <Compile Include="Old Stuff\Player.cs" />
+    <Compile Include="Old Stuff\PlayerController.cs" />
+    <Compile Include="Old Stuff\PlayerMK2.cs" />
+    <Compile Include="Old Stuff\Projectile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Weapon.cs" />
+    <Compile Include="Old Stuff\Weapon.cs" />
+    <Compile Include="Train.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
