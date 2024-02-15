@@ -16,13 +16,17 @@ class Train : Sprite
     public Vector2 otherForces = new Vector2(0, 0);
     public Vector2 totalForces = new Vector2(0, 0);
 
-    public float mass = 500f;
+    public float mass = 3000f;
     public bool grounded = false;
-    public float friction = 0.1f;
+    public float friction = 0.03f;
     public float moveForce = 1f;
 
     public int fixedDeltaTime = 20;
     public float accumulatedTime = 0;
+
+    private bool generatedTracks = false;
+    private List<int> trackHeights = new List<int>();
+    private int trackIndex = 0;
 
     private InputBuffer inputBuffer = new InputBuffer();
     public Train(string fileName) : base(fileName)
@@ -32,6 +36,8 @@ class Train : Sprite
 
     private void Update()
     {
+        genTrack(8);
+
         HandleInput();
 
         RunFixedUpdate(Time.deltaTime);
@@ -48,11 +54,11 @@ class Train : Sprite
     {
         //main
         inputBuffer.AddAxisInput(Input.GetAxis(Key.A, Key.D), Key.A);
-        inputBuffer.AddAxisInput(Input.GetAxis(Key.W, Key.S), Key.W);
+        inputBuffer.AddAxisInput(Input.GetAxisDown(Key.W, Key.S), Key.W);
 
         //alt
         inputBuffer.AddAxisInput(Input.GetAxis(Key.LEFT, Key.RIGHT), Key.A);
-        inputBuffer.AddAxisInput(Input.GetAxis(Key.UP, Key.DOWN), Key.W);
+        inputBuffer.AddAxisInput(Input.GetAxisDown(Key.UP, Key.DOWN), Key.W);
 
     }
     private void HandleBufferedInputs()
@@ -77,9 +83,13 @@ class Train : Sprite
         }
 
         hDir = Mathf.Clamp(hDir, -1f, 1f);
-        vDir = Mathf.Clamp(vDir, -1f, 1f);
+        vDir = Mathf.Clamp(vDir, -1, 1);
 
-        movement = new Vector2(hDir * moveForce, vDir * moveForce);
+        movement = new Vector2(hDir * moveForce, 0);
+
+        trackIndex += Mathf.Round(vDir);
+        trackIndex = Mathf.Round(Mathf.Clamp(trackIndex, 0, trackHeights.Count-1));
+        y = trackHeights[trackIndex];
 
         inputBuffer.ProcessInputs();
     }
@@ -126,5 +136,18 @@ class Train : Sprite
         keys = keyInputs;
         axises = axisInputs;
         mouse = mouseInputs;
+    }
+    private void genTrack(int nTracks)
+    {
+        if (!generatedTracks)
+        {
+            int spacing = game.height / (nTracks);
+
+            for (int i = 0; i < nTracks; i++)
+            {
+                trackHeights.Add(spacing * i + spacing / 2);
+            }
+            generatedTracks = true;
+        }
     }
 }

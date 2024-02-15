@@ -10,6 +10,7 @@ public class MyGame : Game {
 	// Declare other variables:
 	SoundChannel soundTrack;
 
+	LevelHandler levelHandler;
 	Train train;
 
 	public MyGame() : base(1366, 768, false, true)     // Create a window that's 1200x800 and NOT fullscreen
@@ -23,9 +24,12 @@ public class MyGame : Game {
 		train = new Train("colors.png");
 		train.SetXY(width/2, height/2);
 
+		levelHandler = new LevelHandler();
+
 		// Add all sprites to the engine, so that they will be displayed every frame:
 		// (The order that we add them is the order that they will be drawn.)
 		AddChild(background);
+		AddChild(levelHandler);
 		AddChild(train);
 
 		// Play a sound track, looping and streaming, and keep a reference to it such that
@@ -60,6 +64,7 @@ public class MyGame : Game {
 		if (Time.deltaTime != 0)
 		{
 			background.Text(String.Format("FPS: {0}", 1000 / Time.deltaTime), width - 100, 40);
+			background.Text(String.Format("levelSpeed: {0}", levelHandler.levelSpeed), 40, 40);
 		}
 	}
 
