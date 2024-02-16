@@ -21,10 +21,11 @@ public class MyGame : Game {
 		// (in MyGame, width and height refer to game.width and game.height: the window size)
 		background = new EasyDraw(width, height);
 
-		train = new Train("colors.png");
+		train = new Train("train_sprite.png");
 		train.SetXY(width/2, height/2);
+		train.SetScaleXY(0.66f, 0.66f);
 
-		levelHandler = new LevelHandler();
+		levelHandler = new LevelHandler(background, train);
 
 		// Add all sprites to the engine, so that they will be displayed every frame:
 		// (The order that we add them is the order that they will be drawn.)
@@ -65,6 +66,7 @@ public class MyGame : Game {
 		{
 			background.Text(String.Format("FPS: {0}", 1000 / Time.deltaTime), width - 100, 40);
 			background.Text(String.Format("levelSpeed: {0}", levelHandler.levelSpeed), 40, 40);
+			background.Text(String.Format("levelDistance: {0}", levelHandler.levelDistance), 40, 80);
 		}
 	}
 

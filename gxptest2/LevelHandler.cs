@@ -9,22 +9,48 @@ using GXPEngine.Core;
 class LevelHandler : GameObject
 {
     public float levelSpeed = 3;
+    public float levelDistance = 0;
 
     public int fixedDeltaTime = 20;
     public float accumulatedTime = 0;
 
-    public LevelHandler()
+    EasyDraw bg;
+    Train train;
+
+    Random random = new Random();
+
+    List<int> breakLengths = new List<int>();
+    List<int> breakStarts = new List<int>();
+    List<int> breakTracks = new List<int>();
+
+    List<int> breakAbleTracks = new List<int>() { 0, 1, 2, 3, 4 };
+
+    int distanceToNextBreak = 0;
+    int lastBreak = 0;
+
+    public LevelHandler(EasyDraw bgIn, Train trainIn)
     {
-        
+        train = trainIn;
+        bg = bgIn;
+
+        distanceToNextBreak = game.width * 2;
+
+        breakLengths.Add(random.Next(865, 5051));
+        breakTracks.Add(random.Next(0, 5));
+        breakStarts.Add(distanceToNextBreak + lastBreak);
     }
     private void Update()
     {
+        genTrackBreaks();
+        drawTempTrack();
+
         RunFixedUpdate(Time.deltaTime);
     }
     private void FixedUpdate()
     {
-        levelSpeed += 0.001f;
-        SpawnShit();
+        levelSpeed += 0.005f;
+        levelDistance += levelSpeed * fixedDeltaTime / 10;
+        //SpawnShit();
     }
     private void RunFixedUpdate(float deltaTime)
     {
@@ -37,6 +63,57 @@ class LevelHandler : GameObject
         }
     }
 
+    private void genTrackBreaks()
+    {
+        if(breakStarts != null && levelDistance > breakStarts[0] + breakLengths[0])
+        {
+            breakStarts.RemoveAt(0);
+            breakLengths.RemoveAt(0);
+
+            breakAbleTracks.Add(breakTracks[0]);
+            breakTracks.RemoveAt(0);
+        }
+
+        if(levelDistance > distanceToNextBreak + lastBreak && breakAbleTracks.Count > 4)
+        {
+            int trackID = breakAbleTracks[random.Next(0, breakAbleTracks.Count)];
+            breakAbleTracks.Remove(trackID);
+
+            lastBreak = distanceToNextBreak + lastBreak;
+            distanceToNextBreak = random.Next(352, 1024);
+
+            int randomNewStart = distanceToNextBreak + Mathf.Round(levelDistance) + game.width;
+
+            breakTracks.Add(trackID);
+
+            breakStarts.Add(randomNewStart);
+            
+            breakLengths.Add(random.Next(865, 5051));
+        }
+    }
+    private void drawTempTrack()
+    {
+        int trackoffset = 20;
+        for (int i = 0; i < train.trackHeights.Count; i++)
+        {
+            if(breakTracks.Contains(i))
+            {
+                int index = breakTracks.IndexOf(i);
+                //first set
+                bg.Line(-100, train.trackHeights[i] - trackoffset, breakStarts[index] - levelDistance, train.trackHeights[i] - trackoffset);
+                bg.Line(-100, train.trackHeights[i] + trackoffset, breakStarts[index] - levelDistance, train.trackHeights[i] + trackoffset);
+                //second set
+                bg.Line(breakStarts[index] + breakLengths[index] - levelDistance, train.trackHeights[i] - trackoffset, game.width, train.trackHeights[i] - trackoffset);
+                bg.Line(breakStarts[index] + breakLengths[index] - levelDistance, train.trackHeights[i] + trackoffset, game.width, train.trackHeights[i] + trackoffset);
+            }
+
+            else
+            {
+                bg.Line(-100, train.trackHeights[i] - trackoffset, game.width, train.trackHeights[i] - trackoffset);
+                bg.Line(-100, train.trackHeights[i] + trackoffset, game.width, train.trackHeights[i] + trackoffset);
+            }
+        }
+    }
     private void SpawnShit()
     {
         var rand = new Random();

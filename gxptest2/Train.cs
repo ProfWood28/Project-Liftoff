@@ -25,18 +25,18 @@ class Train : Sprite
     public float accumulatedTime = 0;
 
     private bool generatedTracks = false;
-    private List<int> trackHeights = new List<int>();
+    public List<int> trackHeights = new List<int>();
     private int trackIndex = 0;
 
     private InputBuffer inputBuffer = new InputBuffer();
     public Train(string fileName) : base(fileName)
     {
-        SetOrigin(width/2,height/2);
+        SetOrigin(width/2,height*0.85f);
     }
 
     private void Update()
     {
-        genTrack(8);
+        genTrack(5);
 
         HandleInput();
 
@@ -141,11 +141,11 @@ class Train : Sprite
     {
         if (!generatedTracks)
         {
-            int spacing = game.height / (nTracks);
+            int spacing = (game.height - 150) / (nTracks);
 
             for (int i = 0; i < nTracks; i++)
             {
-                trackHeights.Add(spacing * i + spacing / 2);
+                trackHeights.Add(spacing * i + spacing / 2 + 150);
             }
             generatedTracks = true;
         }
