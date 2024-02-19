@@ -13,6 +13,8 @@ public class MyGame : Game {
 	LevelHandler levelHandler;
 	Train train;
 
+	public Sprite rails;
+
 	public MyGame() : base(1366, 768, false, true)     // Create a window that's 1200x800 and NOT fullscreen
 	{
 		targetFps = 600;
@@ -20,6 +22,7 @@ public class MyGame : Game {
 		// Create a full screen canvas (EasyDraw):
 		// (in MyGame, width and height refer to game.width and game.height: the window size)
 		background = new EasyDraw(width, height);
+		rails = new Sprite("Empty.png", false, false);
 
 		train = new Train("train_sprite.png");
 		train.SetXY(width/2, height/2);
@@ -31,12 +34,13 @@ public class MyGame : Game {
 		// (The order that we add them is the order that they will be drawn.)
 		AddChild(background);
 		AddChild(levelHandler);
+		AddChild(rails);
 		AddChild(train);
 
-		// Play a sound track, looping and streaming, and keep a reference to it such that
-		// we can change the volume:
-		// (The .ogg file is in bin/Debug. ogg, mp3 and wav files are supported)
-		soundTrack = new Sound("The_Endless_Journey.ogg", true, true).Play(true);
+// Play a sound track, looping and streaming, and keep a reference to it such that
+// we can change the volume:
+// (The .ogg file is in bin/Debug. ogg, mp3 and wav files are supported)
+soundTrack = new Sound("The_Endless_Journey.ogg", true, true).Play(true);
 
 		// Print some information to the console (behind the game window):
 		Console.WriteLine("Scene successfully initialized");

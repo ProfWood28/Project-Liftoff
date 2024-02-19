@@ -25,6 +25,9 @@ class LevelHandler : GameObject
 
     List<int> breakAbleTracks = new List<int>() { 0, 1, 2, 3, 4 };
 
+    RailStraight railStraight;
+    int lastTrackSpawn = 0;
+
     int distanceToNextBreak = 0;
     int lastBreak = 0;
 
@@ -32,6 +35,7 @@ class LevelHandler : GameObject
     {
         train = trainIn;
         bg = bgIn;
+        railStraight = new RailStraight(999,this);
 
         distanceToNextBreak = game.width * 2;
 
@@ -42,7 +46,9 @@ class LevelHandler : GameObject
     private void Update()
     {
         genTrackBreaks();
-        drawTempTrack();
+
+        SpawnTempTrack();
+        //drawTempTrack();
 
         RunFixedUpdate(Time.deltaTime);
     }
@@ -91,6 +97,24 @@ class LevelHandler : GameObject
             breakLengths.Add(random.Next(865, 5051));
         }
     }
+    private void SpawnTempTrack()
+    {
+        if(lastTrackSpawn + railStraight.width - levelDistance < 6)
+            for (int i = 0; i < train.trackHeights.Count; i++)
+            {
+                //Console.WriteLine("Currently on loop {0}/{1}", i, train.trackHeights.Count);
+                if(breakAbleTracks.Contains(i))
+                {
+                    lastTrackSpawn = Mathf.Round(levelDistance);
+                    RailStraight newTrack = new RailStraight(train.trackHeights[i], this);
+                    //make this smarter in case we add more things to the game lol 
+                    game.GetChildren()[2].LateAddChild(newTrack);
+                    Console.WriteLine("Spawned trackpiece");
+                }
+            }
+
+    }
+
     private void drawTempTrack()
     {
         int trackoffset = 20;
@@ -114,47 +138,41 @@ class LevelHandler : GameObject
             }
         }
     }
-    private void SpawnShit()
+
+    class RailStraight : Sprite
     {
-        var rand = new Random();
-
-        if(rand.Next(101) == 69)
-        {
-            game.AddChild(new Shit(rand.Next(40, game.height - 40), levelSpeed));
-        }
-    }
-
-    class Shit : Sprite
-    {
-        float speed;
-
         public int fixedDeltaTime = 20;
         public float accumulatedTime = 0;
 
-        float mass = 699;
-        float baseForce = -1f;
-        float friction = 0.1f;
+        LevelHandler levelHandler;
+        float lastDistance = 0;
 
-        public Vector2 velocity = new Vector2(0, 0);
-        public Vector2 velocityMoment = new Vector2(0, 0);
-        public Shit(int randomY, float gameSpeed) : base("checkers.png", false)
+        public RailStraight(int yPos, LevelHandler lvlHandler) : base("Temp_Rail_LessDense.png", false)
         {
             SetOrigin(width / 2, height / 2);
             SetScaleXY(0.5f, 0.5f);
-            SetXY(game.width - 100, randomY);
-            speed = gameSpeed;
-            baseForce = baseForce * speed;
+            SetXY(game.width + width, yPos);
+            levelHandler = lvlHandler;
+            lastDistance = levelHandler.levelDistance;
         }
 
         private void Update()
         {
+            float deltaDistance = lastDistance - levelHandler.levelDistance;
+            lastDistance = levelHandler.levelDistance;
+
+            x += deltaDistance;
+
+            if (x < -200)
+            {
+                Destroy();
+            }
+
             RunFixedUpdate(Time.deltaTime);
         }
         private void FixedUpdate()
         {
-            ForceToVelocity();
-
-            ApplyVelocity();
+            
         }
         private void RunFixedUpdate(float deltaTime)
         {
@@ -165,21 +183,6 @@ class LevelHandler : GameObject
                 FixedUpdate();
                 accumulatedTime -= fixedDeltaTime;
             }
-        }
-        private void ForceToVelocity()
-        {
-            Vector2 totalForces = new Vector2(baseForce, 0);
-
-            Vector2 accel = Physics.Accel(mass, totalForces);
-            accel = new Vector2(accel.x * fixedDeltaTime, accel.y * fixedDeltaTime);
-            velocity = new Vector2(velocity.x + accel.x, velocity.y + accel.y);
-            velocity = new Vector2(velocity.x - velocity.x * friction, velocity.y - velocity.y * friction);
-            velocityMoment = new Vector2(velocity.x * fixedDeltaTime, velocity.y * fixedDeltaTime);
-        }
-        private void ApplyVelocity()
-        {
-            x += velocityMoment.x;
-            y += velocityMoment.y;
         }
     }
 }
