@@ -33,9 +33,11 @@ public class MyGame : Game {
 		// Add all sprites to the engine, so that they will be displayed every frame:
 		// (The order that we add them is the order that they will be drawn.)
 		AddChild(background);
-		AddChild(levelHandler);
 		AddChild(rails);
 		AddChild(train);
+		AddChild(levelHandler);
+		
+		
 
 // Play a sound track, looping and streaming, and keep a reference to it such that
 // we can change the volume:

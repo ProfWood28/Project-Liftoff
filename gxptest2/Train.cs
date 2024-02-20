@@ -27,6 +27,7 @@ class Train : Sprite
     private bool generatedTracks = false;
     public List<int> trackHeights = new List<int>();
     private int trackIndex = 0;
+    public int trackCount = 5;
 
     private InputBuffer inputBuffer = new InputBuffer();
     public Train(string fileName) : base(fileName)
@@ -36,7 +37,7 @@ class Train : Sprite
 
     private void Update()
     {
-        genTrack(5);
+        genTrack(trackCount);
 
         HandleInput();
 

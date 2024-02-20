@@ -25,8 +25,10 @@ class LevelHandler : GameObject
 
     List<int> breakAbleTracks = new List<int>() { 0, 1, 2, 3, 4 };
 
-    RailStraight railStraight;
-    int lastTrackSpawn = 0;
+    RailStraight railStraight = new RailStraight(999, -999);
+    List<RailStraight> trackPieces = new List<RailStraight>();
+
+    float lastDistance = 0;
 
     int distanceToNextBreak = 0;
     int lastBreak = 0;
@@ -35,7 +37,6 @@ class LevelHandler : GameObject
     {
         train = trainIn;
         bg = bgIn;
-        railStraight = new RailStraight(999,this);
 
         distanceToNextBreak = game.width * 2;
 
@@ -45,10 +46,7 @@ class LevelHandler : GameObject
     }
     private void Update()
     {
-        genTrackBreaks();
-
-        SpawnTempTrack();
-        //drawTempTrack();
+        UpdateTracks();
 
         RunFixedUpdate(Time.deltaTime);
     }
@@ -56,7 +54,6 @@ class LevelHandler : GameObject
     {
         levelSpeed += 0.005f;
         levelDistance += levelSpeed * fixedDeltaTime / 10;
-        //SpawnShit();
     }
     private void RunFixedUpdate(float deltaTime)
     {
@@ -69,6 +66,7 @@ class LevelHandler : GameObject
         }
     }
 
+    //this currently is unused and wont work with sprite-based tracks
     private void genTrackBreaks()
     {
         if(breakStarts != null && levelDistance > breakStarts[0] + breakLengths[0])
@@ -97,22 +95,43 @@ class LevelHandler : GameObject
             breakLengths.Add(random.Next(865, 5051));
         }
     }
-    private void SpawnTempTrack()
+    private void UpdateTracks()
     {
-        if(lastTrackSpawn + railStraight.width - levelDistance < 6)
-            for (int i = 0; i < train.trackHeights.Count; i++)
+        while(trackPieces.Count <= Mathf.Ceiling(game.width*2 / railStraight.width)*(train.trackCount))
+        {
+            //Console.WriteLine("Added traintrack to track index: {0}", trackPieces.Count % 5);
+            RailStraight newTrack = new RailStraight(train.trackHeights[Mathf.Floor((trackPieces.Count - 1) / Mathf.Ceiling(game.width * 2 / railStraight.width))], (trackPieces.Count % Mathf.Ceiling(game.width*2 / railStraight.width)) * (railStraight.width));
+            game.GetChildren()[1].LateAddChild(newTrack);
+            trackPieces.Add(newTrack);
+            Console.WriteLine("Spawned trackpiece ({1}, {2}), now total is {0}", trackPieces.Count, newTrack.x, newTrack.y);
+        }
+
+        float deltaDistance = levelDistance - lastDistance;
+        float highestDistance = 0;
+        foreach(RailStraight piece in trackPieces)
+        {
+            highestDistance = piece.x >= highestDistance ? piece.x : highestDistance;
+        }
+
+        Console.WriteLine("SpawnPoint: {0}", highestDistance);
+
+        for (int i = 0; i < trackPieces.Count; i++)
+        {
+            RailStraight piece = trackPieces[i];
+            int pieceID = (Mathf.Floor((i - 1) / Mathf.Ceiling(game.width * 2 / railStraight.width)));
+
+            if (piece.x < 0 - piece.width)
             {
-                //Console.WriteLine("Currently on loop {0}/{1}", i, train.trackHeights.Count);
-                if(breakAbleTracks.Contains(i))
-                {
-                    lastTrackSpawn = Mathf.Round(levelDistance);
-                    RailStraight newTrack = new RailStraight(train.trackHeights[i], this);
-                    //make this smarter in case we add more things to the game lol 
-                    game.GetChildren()[2].LateAddChild(newTrack);
-                    Console.WriteLine("Spawned trackpiece");
-                }
+                piece.x = highestDistance + piece.width;
             }
 
+            else
+            {
+                piece.x -= deltaDistance;
+            }
+        }
+
+        lastDistance = levelDistance;
     }
 
     private void drawTempTrack()
@@ -141,48 +160,20 @@ class LevelHandler : GameObject
 
     class RailStraight : Sprite
     {
-        public int fixedDeltaTime = 20;
-        public float accumulatedTime = 0;
-
-        LevelHandler levelHandler;
-        float lastDistance = 0;
-
-        public RailStraight(int yPos, LevelHandler lvlHandler) : base("Temp_Rail_LessDense.png", false)
+        public RailStraight(int yPos, float xPos) : base("Temp_Rail_LessDense.png", false)
         {
             SetOrigin(width / 2, height / 2);
             SetScaleXY(0.5f, 0.5f);
-            SetXY(game.width + width, yPos);
-            levelHandler = lvlHandler;
-            lastDistance = levelHandler.levelDistance;
+            SetXY(xPos, yPos);
         }
 
         private void Update()
         {
-            float deltaDistance = lastDistance - levelHandler.levelDistance;
-            lastDistance = levelHandler.levelDistance;
 
-            x += deltaDistance;
-
-            if (x < -200)
-            {
-                Destroy();
-            }
-
-            RunFixedUpdate(Time.deltaTime);
         }
         private void FixedUpdate()
         {
             
-        }
-        private void RunFixedUpdate(float deltaTime)
-        {
-            accumulatedTime += deltaTime;
-
-            while (accumulatedTime >= fixedDeltaTime)
-            {
-                FixedUpdate();
-                accumulatedTime -= fixedDeltaTime;
-            }
         }
     }
 }
