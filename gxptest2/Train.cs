@@ -26,7 +26,7 @@ class Train : Sprite
 
     private bool generatedTracks = false;
     public List<int> trackHeights = new List<int>();
-    private int trackIndex = 0;
+    public int trackIndex = 2;
     public int trackCount = 5;
 
     private InputBuffer inputBuffer = new InputBuffer();

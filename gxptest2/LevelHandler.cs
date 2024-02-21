@@ -14,38 +14,39 @@ class LevelHandler : GameObject
     public int fixedDeltaTime = 20;
     public float accumulatedTime = 0;
 
-    EasyDraw bg;
-    Train train;
+    private EasyDraw bg;
+    private Train train;
 
-    Random random = new Random();
+    private Random random = new Random();
 
-    List<int> breakLengths = new List<int>();
-    List<int> breakStarts = new List<int>();
-    List<int> breakTracks = new List<int>();
+    private RailStraight railStraight = new RailStraight(999, -999);
+    private List<RailStraight> trackPieces = new List<RailStraight>();
 
-    List<int> breakAbleTracks = new List<int>() { 0, 1, 2, 3, 4 };
+    private float lastDistance = 0;
 
-    RailStraight railStraight = new RailStraight(999, -999);
-    List<RailStraight> trackPieces = new List<RailStraight>();
-
-    float lastDistance = 0;
-
-    int distanceToNextBreak = 0;
-    int lastBreak = 0;
-
+    private List<int> breakableTracks = new List<int>() {0,1,2,3,4};
+    private List<int> gapTracks = new List<int>();
+    private List<float> gapStarts = new List<float>();
+    private List<float> gapLengths = new List<float>();
+    
     public LevelHandler(EasyDraw bgIn, Train trainIn)
     {
         train = trainIn;
         bg = bgIn;
 
-        distanceToNextBreak = game.width * 2;
+        breakableTracks.Remove(train.trackIndex);
+        int randomIndex = random.Next(0, breakableTracks.Count);
+        int trackIndex = breakableTracks[randomIndex];
 
-        breakLengths.Add(random.Next(865, 5051));
-        breakTracks.Add(random.Next(0, 5));
-        breakStarts.Add(distanceToNextBreak + lastBreak);
+        breakableTracks.Remove(trackIndex);
+        gapTracks.Add(trackIndex);
+        gapStarts.Add(game.width*3);
+        gapLengths.Add(random.Next(5, 20)*railStraight.width);
     }
     private void Update()
     {
+        ManageGaps();
+        TrackDebug(true);
         UpdateTracks();
 
         RunFixedUpdate(Time.deltaTime);
@@ -66,40 +67,11 @@ class LevelHandler : GameObject
         }
     }
 
-    //this currently is unused and wont work with sprite-based tracks
-    private void genTrackBreaks()
-    {
-        if(breakStarts != null && levelDistance > breakStarts[0] + breakLengths[0])
-        {
-            breakStarts.RemoveAt(0);
-            breakLengths.RemoveAt(0);
-
-            breakAbleTracks.Add(breakTracks[0]);
-            breakTracks.RemoveAt(0);
-        }
-
-        if(levelDistance > distanceToNextBreak + lastBreak && breakAbleTracks.Count > 4)
-        {
-            int trackID = breakAbleTracks[random.Next(0, breakAbleTracks.Count)];
-            breakAbleTracks.Remove(trackID);
-
-            lastBreak = distanceToNextBreak + lastBreak;
-            distanceToNextBreak = random.Next(352, 1024);
-
-            int randomNewStart = distanceToNextBreak + Mathf.Round(levelDistance) + game.width;
-
-            breakTracks.Add(trackID);
-
-            breakStarts.Add(randomNewStart);
-            
-            breakLengths.Add(random.Next(865, 5051));
-        }
-    }
     private void UpdateTracks()
     {
-        while(trackPieces.Count <= Mathf.Ceiling(game.width*2 / railStraight.width)*(train.trackCount))
+        while(trackPieces.Count < Mathf.Ceiling(game.width*2 / railStraight.width)*(train.trackCount))
         {
-            //Console.WriteLine("Added traintrack to track index: {0}", trackPieces.Count % 5);
+            Console.WriteLine("Added traintrack to track index: {0}", trackPieces.Count % 5);
             RailStraight newTrack = new RailStraight(train.trackHeights[Mathf.Floor((trackPieces.Count - 1) / Mathf.Ceiling(game.width * 2 / railStraight.width))], (trackPieces.Count % Mathf.Ceiling(game.width*2 / railStraight.width)) * (railStraight.width));
             game.GetChildren()[1].LateAddChild(newTrack);
             trackPieces.Add(newTrack);
@@ -113,8 +85,6 @@ class LevelHandler : GameObject
             highestDistance = piece.x >= highestDistance ? piece.x : highestDistance;
         }
 
-        Console.WriteLine("SpawnPoint: {0}", highestDistance);
-
         for (int i = 0; i < trackPieces.Count; i++)
         {
             RailStraight piece = trackPieces[i];
@@ -124,36 +94,108 @@ class LevelHandler : GameObject
             {
                 piece.x = highestDistance + piece.width;
             }
-
             else
             {
                 piece.x -= deltaDistance;
+            }
+
+            int yIndex = Mathf.Floor(i / (trackPieces.Count / train.trackCount));
+
+            if (gapTracks.Contains(yIndex))
+            {
+                float start = gapStarts[gapTracks.IndexOf(yIndex)];
+                float end = gapStarts[gapTracks.IndexOf(yIndex)] + gapLengths[gapTracks.IndexOf(yIndex)];
+
+                if (piece.x + levelDistance > start && piece.x + levelDistance < end)
+                {
+                    piece.y = -9999;
+                }
+                else
+                {
+                    piece.y = train.trackHeights[yIndex];
+                }
+            }
+            else
+            {
+                piece.y = train.trackHeights[yIndex];
             }
         }
 
         lastDistance = levelDistance;
     }
 
-    private void drawTempTrack()
+    private void TrackDebug(bool doDebug)
     {
-        int trackoffset = 20;
-        for (int i = 0; i < train.trackHeights.Count; i++)
+        if (doDebug)
         {
-            if(breakTracks.Contains(i))
-            {
-                int index = breakTracks.IndexOf(i);
-                //first set
-                bg.Line(-100, train.trackHeights[i] - trackoffset, breakStarts[index] - levelDistance, train.trackHeights[i] - trackoffset);
-                bg.Line(-100, train.trackHeights[i] + trackoffset, breakStarts[index] - levelDistance, train.trackHeights[i] + trackoffset);
-                //second set
-                bg.Line(breakStarts[index] + breakLengths[index] - levelDistance, train.trackHeights[i] - trackoffset, game.width, train.trackHeights[i] - trackoffset);
-                bg.Line(breakStarts[index] + breakLengths[index] - levelDistance, train.trackHeights[i] + trackoffset, game.width, train.trackHeights[i] + trackoffset);
-            }
+            bg.StrokeWeight(5);
 
-            else
+            for (int i = 0; i < train.trackCount; i++)
             {
-                bg.Line(-100, train.trackHeights[i] - trackoffset, game.width, train.trackHeights[i] - trackoffset);
-                bg.Line(-100, train.trackHeights[i] + trackoffset, game.width, train.trackHeights[i] + trackoffset);
+                if(i == train.trackIndex)
+                {
+                    bg.Stroke(255, 0, 0);
+                }
+                else
+                {
+                    bg.Stroke(255, 255, 255);
+                }
+
+                if (gapTracks.Contains(i))
+                {
+                    int index = gapTracks.IndexOf(i);
+
+                    bg.Line(-10, train.trackHeights[i], gapStarts[index] - levelDistance, train.trackHeights[i]);
+                    bg.Line(gapStarts[index] + gapLengths[index] - levelDistance, train.trackHeights[i], game.width + 10, train.trackHeights[i]);
+                }
+                else
+                {
+                    bg.Line(0, train.trackHeights[i], game.width, train.trackHeights[i]);
+                }
+            }
+        }
+    }
+
+    private void ManageGaps()
+    {
+        for (int i = gapTracks.Count-1; i >= 0; i--)
+        {
+            if (gapTracks != null && gapStarts[i] + gapLengths[i] - levelDistance < 0 - railStraight.width*2)
+            {
+                Console.WriteLine("Deleted a gap in lists on track {0}", gapTracks[i]+1);
+
+                breakableTracks.Add(gapTracks[i]);
+                gapTracks.RemoveAt(i);
+                gapStarts.RemoveAt(i);
+                gapLengths.RemoveAt(i);
+            }
+        }
+        
+        if(gapTracks.Count < 2)
+        {
+            int randomIndex = random.Next(0, breakableTracks.Count);
+            int trackIndex = breakableTracks[randomIndex];
+
+            breakableTracks.Remove(trackIndex);
+            gapTracks.Add(trackIndex);
+            gapStarts.Add(random.Next(5,20) * railStraight.width + levelDistance + Mathf.Ceiling(game.width * 2 / railStraight.width)*railStraight.width);
+            gapLengths.Add(random.Next(5, 40) * railStraight.width);
+        }
+
+        if(breakableTracks.Contains(train.trackIndex))
+        {
+            breakableTracks.Remove((train.trackIndex));
+        }
+
+        if(breakableTracks.Count < train.trackCount - 1)
+        {
+            for (int i = 0; i < train.trackCount; i++)
+            {
+                if(!breakableTracks.Contains(i) && i != train.trackIndex)
+                {
+                    breakableTracks.Add(i);
+                    break;
+                }
             }
         }
     }
