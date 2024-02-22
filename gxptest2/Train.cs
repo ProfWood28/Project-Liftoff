@@ -29,6 +29,9 @@ class Train : Sprite
     public int trackIndex = 2;
     public int trackCount = 5;
 
+    public float slowMaxDistance = 100f;
+    public float slowStartDistance = 300f;
+
     private InputBuffer inputBuffer = new InputBuffer();
     public Train(string fileName) : base(fileName)
     {
@@ -109,12 +112,41 @@ class Train : Sprite
     {
         totalForces = new Vector2(movement.x + otherForces.x, movement.y + otherForces.y);
 
+        float slowFactor = ApplyScreenCompensation();
+
         Vector2 accel = Physics.Accel(mass, totalForces);
         accel = new Vector2(accel.x * fixedDeltaTime, accel.y * fixedDeltaTime);
-        velocity = new Vector2(velocity.x + accel.x, velocity.y + accel.y);
-        velocity = new Vector2(velocity.x - velocity.x * friction, velocity.y - velocity.y * friction);
+        velocity = new Vector2((velocity.x + accel.x), velocity.y + accel.y);
+        velocity = new Vector2(velocity.x - velocity.x * (friction + slowFactor), velocity.y - velocity.y * friction);
+
         velocityMoment = new Vector2(velocity.x * fixedDeltaTime, velocity.y * fixedDeltaTime);
     }
+
+    //currently only applies slow when moving towards the edge, not away from it
+    //should not be awefully difficult to add (famous last words probs lmfao)
+    private float ApplyScreenCompensation()
+    {
+        float slowingFactor = 1f;
+        
+        int directionalEdgePos = totalForces.x < 0 ? 0 : game.width;
+        float edgeSlowStart = directionalEdgePos - slowStartDistance * totalForces.Normalize().x;
+        float edgeSlowMax = directionalEdgePos - slowMaxDistance * totalForces.Normalize().x;
+
+        if(directionalEdgePos < game.width/2)
+        {
+            float f = (edgeSlowStart - x) / (edgeSlowStart - edgeSlowMax);
+            slowingFactor = Mathf.Clamp(f, 0f, 1f);
+        }
+        else
+        {
+            float f = (x - edgeSlowStart) / (edgeSlowMax - edgeSlowStart);
+            slowingFactor = Mathf.Clamp(f, 0f, 1f);
+        }
+
+        Console.WriteLine("slowingFactor = {0}", slowingFactor * 0.9);
+        return 0.9f * slowingFactor;
+    }
+
     private void ApplyVelocity()
     {
         x += velocityMoment.x;

@@ -47,7 +47,7 @@ class LevelHandler : GameObject
     {
         ManageGaps();
         TrackDebug(true);
-        UpdateTracks();
+        //UpdateTracks();
 
         RunFixedUpdate(Time.deltaTime);
     }
@@ -129,6 +129,15 @@ class LevelHandler : GameObject
         if (doDebug)
         {
             bg.StrokeWeight(5);
+            bg.Stroke(255, 0, 0);
+
+            bg.Line(train.slowMaxDistance, 0, train.slowMaxDistance, game.height);
+            bg.Line(game.width - train.slowMaxDistance, 0, game.width - train.slowMaxDistance, game.height);
+
+            bg.Stroke(255, 165, 0);
+
+            bg.Line(train.slowStartDistance, 0, train.slowStartDistance, game.height);
+            bg.Line(game.width - train.slowStartDistance, 0, game.width - train.slowStartDistance, game.height);
 
             for (int i = 0; i < train.trackCount; i++)
             {
