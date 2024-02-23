@@ -35,6 +35,34 @@ namespace GXPEngine.Core
 				return new Vector2(0, 0);
 			}
         }
+		public static Vector2 operator +(Vector2 a, Vector2 b)
+		{
+			return new Vector2(a.x + b.x, a.y + b.y);
+		}
+
+		public static Vector2 operator -(Vector2 a, Vector2 b)
+		{
+			return new Vector2(a.x - b.x, a.y - b.y);
+		}
+
+		public static Vector2 operator *(Vector2 vec, float scalar)
+		{
+			return new Vector2(vec.x * scalar, vec.y * scalar);
+		}
+
+		public static Vector2 operator *(float scalar, Vector2 vec)
+		{
+			return vec * scalar;
+		}
+		public static Vector2 operator /(Vector2 vec, float scalar)
+		{
+			return new Vector2(vec.x / scalar, vec.y / scalar);
+		}
+
+		public static Vector2 operator /(float scalar, Vector2 vec)
+		{
+			return vec / scalar;
+		}
 	}
 }
 

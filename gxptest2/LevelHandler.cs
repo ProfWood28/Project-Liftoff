@@ -11,7 +11,7 @@ class LevelHandler : GameObject
     public float levelSpeed = 3;
     public float levelDistance = 0;
 
-    public int fixedDeltaTime = 20;
+    public float fixedDeltaTime = 0.02f;
     public float accumulatedTime = 0;
 
     private EasyDraw bg;
@@ -46,24 +46,23 @@ class LevelHandler : GameObject
     private void Update()
     {
         ManageGaps();
-        TrackDebug(true);
-        //UpdateTracks();
+        TrackDebug(false, true);
+        UpdateTracks();
 
         RunFixedUpdate(Time.deltaTime);
     }
     private void FixedUpdate()
     {
         levelSpeed += 0.005f;
-        levelDistance += levelSpeed * fixedDeltaTime / 10;
+        levelDistance += levelSpeed * fixedDeltaTime;
     }
     private void RunFixedUpdate(float deltaTime)
     {
         accumulatedTime += deltaTime;
-
-        while (accumulatedTime >= fixedDeltaTime)
+        while (accumulatedTime >= fixedDeltaTime * 1000)
         {
             FixedUpdate();
-            accumulatedTime -= fixedDeltaTime;
+            accumulatedTime -= fixedDeltaTime * 1000;
         }
     }
 
@@ -124,21 +123,16 @@ class LevelHandler : GameObject
         lastDistance = levelDistance;
     }
 
-    private void TrackDebug(bool doDebug)
+    private void TrackDebug(bool doTrackDebug, bool doPlayerDebug)
     {
-        if (doDebug)
+        if(doPlayerDebug)
         {
-            bg.StrokeWeight(5);
-            bg.Stroke(255, 0, 0);
+            string debugText = String.Format("Velocity: ({0}, {1})", train.velocity.x * (1 / fixedDeltaTime), train.velocity.y * (1 / fixedDeltaTime));
+            bg.Text(debugText, 40, 120);
+        }
 
-            bg.Line(train.slowMaxDistance, 0, train.slowMaxDistance, game.height);
-            bg.Line(game.width - train.slowMaxDistance, 0, game.width - train.slowMaxDistance, game.height);
-
-            bg.Stroke(255, 165, 0);
-
-            bg.Line(train.slowStartDistance, 0, train.slowStartDistance, game.height);
-            bg.Line(game.width - train.slowStartDistance, 0, game.width - train.slowStartDistance, game.height);
-
+        if (doTrackDebug)
+        {
             for (int i = 0; i < train.trackCount; i++)
             {
                 if(i == train.trackIndex)
@@ -171,7 +165,7 @@ class LevelHandler : GameObject
         {
             if (gapTracks != null && gapStarts[i] + gapLengths[i] - levelDistance < 0 - railStraight.width*2)
             {
-                Console.WriteLine("Deleted a gap in lists on track {0}", gapTracks[i]+1);
+                //Console.WriteLine("Deleted a gap in lists on track {0}", gapTracks[i]+1);
 
                 breakableTracks.Add(gapTracks[i]);
                 gapTracks.RemoveAt(i);
@@ -216,15 +210,6 @@ class LevelHandler : GameObject
             SetOrigin(width / 2, height / 2);
             SetScaleXY(0.5f, 0.5f);
             SetXY(xPos, yPos);
-        }
-
-        private void Update()
-        {
-
-        }
-        private void FixedUpdate()
-        {
-            
         }
     }
 }
