@@ -19,8 +19,12 @@ namespace GXPEngine.Core
 
 		public float Magnitude()
         {
-			return Mathf.Abs(Mathf.Sqrt(x * x + y * y));
+			return Mathf.Sqrt(x * x + y * y);
         }
+		public float sqrMagnitude()
+		{
+			return (x * x + y * y);
+		}
 
 		public Vector2 Normalize()
         {
