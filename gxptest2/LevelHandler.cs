@@ -127,8 +127,8 @@ class LevelHandler : GameObject
     {
         if(doPlayerDebug)
         {
-            string debugText = String.Format("Velocity: ({0}, {1})", train.velocity.x * (1 / fixedDeltaTime), train.velocity.y * (1 / fixedDeltaTime));
-            bg.Text(debugText, 40, 120);
+            string debugVelocity = String.Format("Velocity: ({0}, {1})", train.velocity.x, train.velocity.y);
+            bg.Text(debugVelocity, 40, 120);
         }
 
         if (doTrackDebug)

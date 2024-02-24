@@ -16,10 +16,11 @@ class Train : Sprite
     public Vector2Double otherForces = new Vector2Double(0, 0);
     public Vector2Double totalForces = new Vector2Double(0, 0);
 
-    public float mass = 60f;
+    public float mass = 2000f;
     public bool grounded = false;
-    public float friction = 0.03f;
-    public float moveForce = 200f;
+    public float friction = 0.15f;
+    public float moveForce = 2500f;
+    public float noControlBreak = 500f;
 
     public float fixedDeltaTime = 0.02f;
     public float accumulatedTime = 0;
@@ -107,18 +108,22 @@ class Train : Sprite
     }
     private void ForceToVelocity()
     {
-        totalForces = movement + otherForces;
+        double frictionForce = friction * (velocity.x * velocity.x * (velocity.Normalize().x * -1));
 
+        double controlBreak = movement.sqrMagnitude() == 0 ? noControlBreak * velocity.Normalize().x * -1 : 0;
+
+        totalForces = movement + otherForces + new Vector2Double(frictionForce + controlBreak, 0);
+       
         Vector2Double accel = Physics.Accel(mass, totalForces);
-        accel = accel * fixedDeltaTime;
-        velocity = velocity + accel;
-        velocity -= velocity * friction;
+        velocity += accel;
+
+        velocity = velocity * (velocity.sqrMagnitude() < 0.01f ? 0 : 1);
     }
 
     private void ApplyVelocity()
     {
-        x += (float)velocity.x;
-        y += (float)velocity.y;
+        x += (float)velocity.x * fixedDeltaTime;
+        y += (float)velocity.y * fixedDeltaTime;
 
         movement = new Vector2Double(0, 0);
         otherForces = new Vector2Double(0, 0);

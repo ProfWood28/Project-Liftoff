@@ -23,8 +23,12 @@ namespace GXPEngine.Core
 		}
 
 		public double Magnitude()
+        {
+			return Math.Sqrt(x * x + y * y);
+        }
+		public double sqrMagnitude()
 		{
-			return Math.Abs(Math.Sqrt(x * x + y * y));
+			return (x * x + y * y);
 		}
 
 		public Vector2Double Normalize()
