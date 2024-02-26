@@ -1,21 +1,21 @@
-using System;                   // System contains a lot of default C# libraries 
+using System;						// System contains a lot of default C# libraries 
 using System.Collections.Generic;
-using GXPEngine;                // GXPEngine contains the engine
-using GXPEngine.Core;
+using GXPEngine;					// GXPEngine contains the engine
+using GXPEngine.Core;               // cannot be bothered to type Core.Vector2 every goddamn time
+using System.IO.Ports;
 
 public class MyGame : Game {
 	// Declare the Sprite variables:
 	EasyDraw background;
-
-	// Declare other variables:
-	SoundChannel soundTrack;
 
 	LevelHandler levelHandler;
 	Train train;
 
 	public Sprite rails;
 
-	public MyGame() : base(1366, 768, false, true)     // Create a window that's 1200x800 and NOT fullscreen
+	public static SerialPort port = new SerialPort();
+
+	public MyGame() : base(1366, 768, false, true)     // Create a window that's 1366x768 and IS fullscreen
 	{
 		targetFps = 600;
 
@@ -24,7 +24,7 @@ public class MyGame : Game {
 		background = new EasyDraw(width, height);
 		rails = new Sprite("Empty.png", false, false);
 
-		train = new Train("train_sprite.png");
+		train = new Train("train_sprite-Sheet_v2.png", 3, 3, 8, port);
 		train.SetXY(width/2, height/2);
 		train.SetScaleXY(0.66f, 0.66f);
 
@@ -36,31 +36,10 @@ public class MyGame : Game {
 		AddChild(rails);
 		AddChild(train);
 		AddChild(levelHandler);
-		
-		
 
-// Play a sound track, looping and streaming, and keep a reference to it such that
-// we can change the volume:
-// (The .ogg file is in bin/Debug. ogg, mp3 and wav files are supported)
-soundTrack = new Sound("The_Endless_Journey.ogg", true, true).Play(true);
 
 		// Print some information to the console (behind the game window):
 		Console.WriteLine("Scene successfully initialized");
-	}
-
-	void FillBackground() {
-		for (int i = 0; i < 100; i++) {
-			// Set the fill color of the canvas to a random color:
-			background.Fill(Utils.Random(100, 255), Utils.Random(100, 255), Utils.Random(100, 255));
-			// Don't draw an outline for shapes:
-			background.NoStroke();
-			// Choose a random position and size:
-			float px = Utils.Random(0, width);
-			float py = Utils.Random(0, height);
-			float size = Utils.Random(2, 5);
-			// Draw a small circle shape on the canvas:
-			background.Ellipse(px, py, size, size);
-		}
 	}
 
 	// Update is called once per frame, by the engine, for each game object in the hierarchy
@@ -78,6 +57,26 @@ soundTrack = new Sound("The_Endless_Journey.ogg", true, true).Play(true);
 
 	// Main is the first method that's called when the program is run
 	static void Main() {
+		
+		string[] portNames = SerialPort.GetPortNames();
+
+        foreach (string portName in portNames)
+        {
+			port.PortName = portName;
+			port.BaudRate = 9600;
+			port.RtsEnable = true;
+			port.DtrEnable = true;
+
+			try
+			{
+				port.Open();
+				Console.WriteLine("Opened port at {0}", portName);
+			}
+			catch 
+			{
+				Console.WriteLine("Couldn't find open port at '{0}'", portName);
+			}
+		}
 		// Create a "MyGame" and start it:
 		new MyGame().Start();
 	}

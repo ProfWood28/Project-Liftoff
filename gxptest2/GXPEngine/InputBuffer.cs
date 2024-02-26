@@ -50,12 +50,6 @@ public class InputBuffer
 
     public void ProcessInputs()
     {
-        //foreach (InputEvent input in buffer)
-        //{
-        //    // Process each input event
-        //    ProcessInput(input);
-        //}
-
         // Clear the buffer after processing inputs
         buffer.Clear();
     }

@@ -46,7 +46,7 @@ class LevelHandler : GameObject
     private void Update()
     {
         ManageGaps();
-        TrackDebug(false, true);
+        TrackDebug(true, true);
         UpdateTracks();
 
         RunFixedUpdate(Time.deltaTime);
@@ -54,7 +54,7 @@ class LevelHandler : GameObject
     private void FixedUpdate()
     {
         levelSpeed += 0.005f;
-        levelDistance += levelSpeed * fixedDeltaTime;
+        levelDistance += levelSpeed;
     }
     private void RunFixedUpdate(float deltaTime)
     {
@@ -70,11 +70,11 @@ class LevelHandler : GameObject
     {
         while(trackPieces.Count < Mathf.Ceiling(game.width*2 / railStraight.width)*(train.trackCount))
         {
-            Console.WriteLine("Added traintrack to track index: {0}", trackPieces.Count % 5);
+            //Console.WriteLine("Added traintrack to track index: {0}", trackPieces.Count % 5);
             RailStraight newTrack = new RailStraight(train.trackHeights[Mathf.Floor((trackPieces.Count - 1) / Mathf.Ceiling(game.width * 2 / railStraight.width))], (trackPieces.Count % Mathf.Ceiling(game.width*2 / railStraight.width)) * (railStraight.width));
             game.GetChildren()[1].LateAddChild(newTrack);
             trackPieces.Add(newTrack);
-            Console.WriteLine("Spawned trackpiece ({1}, {2}), now total is {0}", trackPieces.Count, newTrack.x, newTrack.y);
+            //Console.WriteLine("Spawned trackpiece ({1}, {2}), now total is {0}", trackPieces.Count, newTrack.x, newTrack.y);
         }
 
         float deltaDistance = levelDistance - lastDistance;
@@ -133,6 +133,8 @@ class LevelHandler : GameObject
 
         if (doTrackDebug)
         {
+            bg.StrokeWeight(5);
+
             for (int i = 0; i < train.trackCount; i++)
             {
                 if(i == train.trackIndex)
@@ -181,7 +183,7 @@ class LevelHandler : GameObject
 
             breakableTracks.Remove(trackIndex);
             gapTracks.Add(trackIndex);
-            gapStarts.Add(random.Next(5,20) * railStraight.width + levelDistance + Mathf.Ceiling(game.width * 2 / railStraight.width)*railStraight.width);
+            gapStarts.Add(random.Next(5,20) * railStraight.width + levelDistance + game.width*2);
             gapLengths.Add(random.Next(5, 40) * railStraight.width);
         }
 

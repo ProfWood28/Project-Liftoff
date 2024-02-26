@@ -5,8 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using GXPEngine;
 using GXPEngine.Core;
+using System.IO.Ports;
 
-class Train : Sprite
+class Train : AnimationSprite
 {
     public Vector2Double movement = new Vector2Double(0, 0);
 
@@ -30,14 +31,21 @@ class Train : Sprite
     public int trackIndex = 2;
     public int trackCount = 5;
 
+    SerialPort sPort;
+    int lastButton = 0;
+
     private InputBuffer inputBuffer = new InputBuffer();
-    public Train(string fileName) : base(fileName)
+    public Train(string fileName, int cols, int rows, int frames, SerialPort SP) : base(fileName, cols, rows, frames)
     {
-        SetOrigin(width/2,height*0.85f);
+        SetOrigin(width/2,height*0.92f);
+        SetCycle(0, frames, 40, true);
+        sPort = SP;
     }
 
     private void Update()
     {
+        AnimateFixed();
+
         genTrack(trackCount);
 
         HandleInput();
@@ -54,6 +62,39 @@ class Train : Sprite
     }
     private void HandleInput()
     {
+        //controller
+        string serialInput = sPort.ReadExisting();
+
+        if (serialInput != "")
+        {
+            string[] subs = serialInput.Split(':');
+
+            string input = subs.Length > 1 ? subs[1] : "";
+
+            int inputKey = 0;
+
+            if (!string.IsNullOrEmpty(input))
+            {
+                int.TryParse(input, out inputKey);
+                inputKey -= 32;
+            }
+
+            if (inputKey == Key.W || inputKey == Key.S)
+            {
+                if (inputKey != lastButton)
+                {
+                    int output = inputKey == Key.W ? -1 : 1;
+                    inputBuffer.AddAxisInput(output, Key.W);
+
+                }
+            }
+            else if (inputKey == Key.A || inputKey == Key.D)
+            {
+                int output = inputKey == Key.A ? -1 : 1;
+                inputBuffer.AddAxisInput(output, Key.A);
+            }
+        }
+
         //main
         inputBuffer.AddAxisInput(Input.GetAxis(Key.A, Key.D), Key.A);
         inputBuffer.AddAxisInput(Input.GetAxisDown(Key.W, Key.S), Key.W);
@@ -117,7 +158,7 @@ class Train : Sprite
         Vector2Double accel = Physics.Accel(mass, totalForces);
         velocity += accel;
 
-        velocity = velocity * (velocity.sqrMagnitude() < 0.01f ? 0 : 1);
+        velocity = velocity * (velocity.sqrMagnitude() < 0.05f ? 0 : 1);
     }
 
     private void ApplyVelocity()
