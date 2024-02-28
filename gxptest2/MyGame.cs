@@ -15,9 +15,9 @@ public class MyGame : Game {
 
 	public static SerialPort port = new SerialPort();
 
-	public MyGame() : base(1366, 768, false, true)     // Create a window that's 1366x768 and IS fullscreen
+	public MyGame() : base(1366, 768, false, false)     // Create a window that's 1366x768 and ISnt fullscreen
 	{
-		targetFps = 600;
+		targetFps = 144; //needed fsr
 
 		// Create a full screen canvas (EasyDraw):
 		// (in MyGame, width and height refer to game.width and game.height: the window size)
@@ -71,6 +71,8 @@ public class MyGame : Game {
 			{
 				port.Open();
 				Console.WriteLine("Opened port at {0}", portName);
+
+				port.Write("1");
 			}
 			catch 
 			{

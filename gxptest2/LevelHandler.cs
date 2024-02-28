@@ -28,13 +28,14 @@ class LevelHandler : GameObject
     private List<int> gapTracks = new List<int>();
     private List<float> gapStarts = new List<float>();
     private List<float> gapLengths = new List<float>();
+
+    private List<int> tracksTrainCanMoveTo = new List<int> {0,1,2,3,4};
     
     public LevelHandler(EasyDraw bgIn, Train trainIn)
     {
         train = trainIn;
         bg = bgIn;
 
-        breakableTracks.Remove(train.trackIndex);
         int randomIndex = random.Next(0, breakableTracks.Count);
         int trackIndex = breakableTracks[randomIndex];
 
@@ -46,6 +47,15 @@ class LevelHandler : GameObject
     private void Update()
     {
         ManageGaps();
+
+        Console.Write("Breakables: ");
+
+        for (int i = 0; i < breakableTracks.Count; i++)
+        {
+            Console.Write("{0}; ", breakableTracks[i]);
+        }
+        Console.WriteLine("");
+        
         TrackDebug(true, true);
         UpdateTracks();
 
@@ -176,11 +186,27 @@ class LevelHandler : GameObject
             }
         }
         
-        if(gapTracks.Count < 2)
+        if(gapTracks.Count < 3)
         {
+            bool noInstaKill = false;
+
+            if(!breakableTracks.Contains(train.trackIndex - 1) && !breakableTracks.Contains(train.trackIndex + 1))
+            {
+                breakableTracks.Remove(train.trackIndex);
+                noInstaKill = true;
+            }
+
             int randomIndex = random.Next(0, breakableTracks.Count);
             int trackIndex = breakableTracks[randomIndex];
 
+            //why the fuck no work
+            //I am going to kill someone
+            //it might be me but alas
+            if(noInstaKill)
+            {
+                breakableTracks.Add(train.trackIndex);
+            }
+            
             breakableTracks.Remove(trackIndex);
             gapTracks.Add(trackIndex);
             gapStarts.Add(random.Next(5,20) * railStraight.width + levelDistance + game.width*2);
@@ -192,17 +218,35 @@ class LevelHandler : GameObject
             breakableTracks.Remove((train.trackIndex));
         }
 
-        if(breakableTracks.Count < train.trackCount - 1)
+        if(breakableTracks.Count < train.trackCount)
         {
             for (int i = 0; i < train.trackCount; i++)
             {
-                if(!breakableTracks.Contains(i) && i != train.trackIndex)
+                if(!breakableTracks.Contains(i) && !gapTracks.Contains(i))
                 {
                     breakableTracks.Add(i);
-                    break;
                 }
             }
         }
+
+        tracksTrainCanMoveTo.Clear();
+        for (int i = 0; i < gapTracks.Count; i++)
+        {
+            if(!(train.x + levelDistance > gapStarts[i] && train.x + levelDistance < gapStarts[i] + gapLengths[i]))
+            {
+                tracksTrainCanMoveTo.Add(gapTracks[i]);
+            }
+        }
+
+        for (int i = 0; i < train.trackCount; i++)
+        {
+            if (!gapTracks.Contains(i))
+            {
+                tracksTrainCanMoveTo.Add(i);
+            }
+        }
+
+        train.moveableToTracks = tracksTrainCanMoveTo;
     }
 
     class RailStraight : Sprite

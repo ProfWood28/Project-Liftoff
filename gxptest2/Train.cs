@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using GXPEngine;
 using GXPEngine.Core;
 using System.IO.Ports;
+using System.Windows.Forms;
 
 class Train : AnimationSprite
 {
@@ -31,14 +32,19 @@ class Train : AnimationSprite
     public int trackIndex = 2;
     public int trackCount = 5;
 
+    public bool isAlive;
+    public int health = 3;
+
+    public List<int> moveableToTracks = new List<int>();
+
     SerialPort sPort;
-    int lastButton = 0;
+    Vector2 lastJoystick = new Vector2(512, 512);
 
     private InputBuffer inputBuffer = new InputBuffer();
     public Train(string fileName, int cols, int rows, int frames, SerialPort SP) : base(fileName, cols, rows, frames)
     {
         SetOrigin(width/2,height*0.92f);
-        SetCycle(0, frames, 40, true);
+        SetCycle(0, frames, 15, true);
         sPort = SP;
     }
 
@@ -63,37 +69,13 @@ class Train : AnimationSprite
     private void HandleInput()
     {
         //controller
-        string serialInput = sPort.ReadExisting();
 
-        if (serialInput != "")
-        {
-            string[] subs = serialInput.Split(':');
+        //this doesnt fuckin work I hate serial ports I am so god fuckin done with this why do buttons suck major ass
+        //I am banning the usage of buttons
+        //yeah fuck you no more buttons go kill yourself or fix this shit yourself
 
-            string input = subs.Length > 1 ? subs[1] : "";
-
-            int inputKey = 0;
-
-            if (!string.IsNullOrEmpty(input))
-            {
-                int.TryParse(input, out inputKey);
-                inputKey -= 32;
-            }
-
-            if (inputKey == Key.W || inputKey == Key.S)
-            {
-                if (inputKey != lastButton)
-                {
-                    int output = inputKey == Key.W ? -1 : 1;
-                    inputBuffer.AddAxisInput(output, Key.W);
-
-                }
-            }
-            else if (inputKey == Key.A || inputKey == Key.D)
-            {
-                int output = inputKey == Key.A ? -1 : 1;
-                inputBuffer.AddAxisInput(output, Key.A);
-            }
-        }
+        //ControllerInput();
+        //Console.WriteLine("Current joystick inputs: ({0}, {1})", lastJoystick.x, lastJoystick.y);
 
         //main
         inputBuffer.AddAxisInput(Input.GetAxis(Key.A, Key.D), Key.A);
@@ -104,6 +86,104 @@ class Train : AnimationSprite
         inputBuffer.AddAxisInput(Input.GetAxisDown(Key.UP, Key.DOWN), Key.W);
 
     }
+
+    private void ControllerInput()
+    {
+        float analogueComp = -512;
+        float threshold = 100;
+        float moveThreshold = 300;
+        //process all serial inputs
+        SerialInput();
+
+        //compensation for 0 - 1023 --> -512 - 512
+        Vector2 adjustedStick = lastJoystick + new Vector2(analogueComp, analogueComp);
+
+        if(Mathf.Abs(adjustedStick.x) < threshold)
+        {
+            adjustedStick.x = 0;
+        }
+
+        //horizontal inputs
+        //Console.WriteLine("Adjusted & signed joystick inputs: ({0}, {1})", (Mathf.Sign(lastJoystick.x)), (Mathf.Sign(lastJoystick.y)));
+
+        if (Mathf.Abs(adjustedStick.x) > moveThreshold)
+        {
+            inputBuffer.AddAxisInput(Mathf.Sign(adjustedStick.Normalize().x), Key.A);
+        }
+    }
+
+    private void SerialInput()
+    {
+        //toggle serial data stream sending from the controller
+        if (Input.GetKeyDown(Key.X))
+        {
+            //by sending any data to the controller
+            sPort.Write("1");
+        }
+
+        //read the serial port
+        string serialInput = sPort.ReadLine();
+
+        //if not empty
+        if (serialInput != "")
+        {
+            //split data by input, which are seperated by '/'
+            string[] inputs = serialInput.Split('/');
+            Console.WriteLine("serial: {0}", serialInput);
+
+            //for each input
+            for (int i = 0; i < inputs.Length; i++)
+            {
+                //seperate input type from input value
+                string[] inputData = inputs[i].Split(':');
+
+                //check if the input is a joystick input, denoted by the input type being 'J'
+                if (inputData[0].Contains("J"))
+                {
+                    //extract (x,y) from string, seperated by ','
+                    string[] joystickData = inputData[1].Split(',');
+
+                    
+
+                    //check if the serial port didn't send any funkey data
+                    //this occurs more often than one would think when it constructs the whole string before sending
+                    if (!joystickData[0].Contains("J") && !joystickData[1].Contains("J") && !joystickData[1].Contains("B"))
+                    {
+                        string joyStickY = joystickData[1];
+
+                        Console.WriteLine("");
+
+                        //convert (x,y) from string to ints
+                        //Console.WriteLine("Joystick X = {0}", joystickData[0]);
+                        int xValue = Convert.ToInt32(joystickData[0]);
+                        //Console.WriteLine("Joystick Y = {0}", joystickData[1]);
+                        int yValue = Convert.ToInt32(joyStickY);
+
+                        //write to storage Vector2
+                        lastJoystick = new Vector2(xValue, yValue);
+                    }   
+                }
+
+                else if (inputData[0].Contains("B"))
+                {
+                    string keyCodeString = inputData[1];
+                    string buttonInfo = inputData[0];
+
+                    if (!keyCodeString.Contains("B"))
+                    {
+                        int keyCode = Convert.ToInt32(keyCodeString) - 32;
+
+                        Keys key = (Keys)keyCode;
+                        string keyString = key.ToString();
+
+                        SendKeys.SendWait(keyString);
+                    }
+                }
+
+            }
+        }
+    }
+
     private void HandleBufferedInputs()
     {
         List<InputEvent> axises = inputBuffer.GetAxisInputs();
@@ -130,8 +210,12 @@ class Train : AnimationSprite
 
         movement = new Vector2Double(hDir * moveForce, 0);
 
-        trackIndex += Mathf.Round(vDir);
-        trackIndex = Mathf.Round(Mathf.Clamp(trackIndex, 0, trackHeights.Count-1));
+        if(moveableToTracks.Contains(trackIndex + Mathf.Round(vDir)))
+        {
+            trackIndex += Mathf.Round(vDir);
+            trackIndex = Mathf.Round(Mathf.Clamp(trackIndex, 0, trackHeights.Count - 1));
+        }
+
         y = trackHeights[trackIndex];
 
         inputBuffer.ProcessInputs();
