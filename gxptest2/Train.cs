@@ -164,6 +164,18 @@ class Train : AnimationSprite
                     }   
                 }
 
+                //this is completely broken
+
+                //first thing first, we are changing the code on the arduino to
+                //send all buttons at all times
+                //it will send a 0 for 'not pressed', and the assoicated keycode (arduino is GXP.Key.code + 32!!!) for 'is pressed'
+                //just modify the below code to check if a keycode sent is <= 0, 
+                //and if not, copy the keycode to the correct position in the array we made :)
+                //make sure to add that it should also copy non-presses, as otherwise, over time, 
+                //the array will read all buttons as pressed
+                //I think thats all
+                //just ping me on discord if ya need help :D
+
                 else if (inputData[0].Contains("B"))
                 {
                     string keyCodeString = inputData[1];
