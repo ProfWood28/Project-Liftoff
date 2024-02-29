@@ -17,6 +17,7 @@ public class MyGame : Game {
 
 	public MyGame() : base(1366, 768, false, false)     // Create a window that's 1366x768 and ISnt fullscreen
 	{
+		//test
 		targetFps = 144; //needed fsr
 
 		// Create a full screen canvas (EasyDraw):
