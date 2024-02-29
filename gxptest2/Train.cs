@@ -275,11 +275,13 @@ class Train : AnimationSprite
     {
         if (!generatedTracks)
         {
-            int spacing = (game.height - 150) / (nTracks);
+            int buffer = 300;
+
+            int spacing = (game.height - buffer) / (nTracks);
 
             for (int i = 0; i < nTracks; i++)
             {
-                trackHeights.Add(spacing * i + spacing / 2 + 150);
+                trackHeights.Add(spacing * i + spacing / 2 + buffer);
             }
             generatedTracks = true;
         }

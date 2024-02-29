@@ -19,7 +19,7 @@ class LevelHandler : GameObject
 
     private Random random = new Random();
 
-    private RailStraight railStraight = new RailStraight(999, -999);
+    private RailStraight railStraight;
     private List<RailStraight> trackPieces = new List<RailStraight>();
 
     private float lastDistance = 0;
@@ -36,6 +36,8 @@ class LevelHandler : GameObject
         train = trainIn;
         bg = bgIn;
 
+        railStraight = new RailStraight(999, -999, this);
+
         int randomIndex = random.Next(0, breakableTracks.Count);
         int trackIndex = breakableTracks[randomIndex];
 
@@ -48,13 +50,13 @@ class LevelHandler : GameObject
     {
         ManageGaps();
 
-        Console.Write("Breakables: ");
+        //Console.Write("Breakables: ");
 
-        for (int i = 0; i < breakableTracks.Count; i++)
-        {
-            Console.Write("{0}; ", breakableTracks[i]);
-        }
-        Console.WriteLine("");
+        //for (int i = 0; i < breakableTracks.Count; i++)
+        //{
+        //    Console.Write("{0}; ", breakableTracks[i]);
+        //}
+        //Console.WriteLine("");
         
         TrackDebug(true, true);
         UpdateTracks();
@@ -81,7 +83,7 @@ class LevelHandler : GameObject
         while(trackPieces.Count < Mathf.Ceiling(game.width*2 / railStraight.width)*(train.trackCount))
         {
             //Console.WriteLine("Added traintrack to track index: {0}", trackPieces.Count % 5);
-            RailStraight newTrack = new RailStraight(train.trackHeights[Mathf.Floor((trackPieces.Count - 1) / Mathf.Ceiling(game.width * 2 / railStraight.width))], (trackPieces.Count % Mathf.Ceiling(game.width*2 / railStraight.width)) * (railStraight.width));
+            RailStraight newTrack = new RailStraight(train.trackHeights[Mathf.Floor((trackPieces.Count - 1) / Mathf.Ceiling(game.width * 2 / railStraight.width))], (trackPieces.Count % Mathf.Ceiling(game.width*2 / railStraight.width)) * (railStraight.width), this);
             game.GetChildren()[1].LateAddChild(newTrack);
             trackPieces.Add(newTrack);
             //Console.WriteLine("Spawned trackpiece ({1}, {2}), now total is {0}", trackPieces.Count, newTrack.x, newTrack.y);
@@ -102,6 +104,13 @@ class LevelHandler : GameObject
             if (piece.x < 0 - piece.width)
             {
                 piece.x = highestDistance + piece.width;
+                
+                if(Mathf.Sign(piece.scaleX) < 0)
+                {
+                    piece.scaleX = piece.scaleFactor;
+                }
+
+                piece.SetFrame(random.Next(0, piece.frameCount - 2));
             }
             else
             {
@@ -118,6 +127,16 @@ class LevelHandler : GameObject
                 if (piece.x + levelDistance > start && piece.x + levelDistance < end)
                 {
                     piece.y = -9999;
+                }
+                else if(piece.x + levelDistance < start && piece.x + levelDistance > start - piece.width)
+                {
+                    piece.SetFrame(random.Next(piece.frameCount - 1, piece.frameCount+1));
+                }
+                else if(piece.x + levelDistance > end && piece.x + levelDistance < end + piece.width)
+                {
+                    piece.y = train.trackHeights[yIndex];
+                    piece.scaleX = -piece.scaleFactor;
+                    piece.SetFrame(random.Next(piece.frameCount - 1, piece.frameCount + 1));
                 }
                 else
                 {
@@ -249,12 +268,21 @@ class LevelHandler : GameObject
         train.moveableToTracks = tracksTrainCanMoveTo;
     }
 
-    class RailStraight : Sprite
+    class RailStraight : AnimationSprite
     {
-        public RailStraight(int yPos, float xPos) : base("Temp_Rail_LessDense.png", false)
+        Random random;
+
+        public float scaleFactor = 2f;
+       public RailStraight(int yPos, float xPos, LevelHandler lvlHandler) : base("tracks-Sheetv3.png", 4, 3, 12)
         {
+            random = new Random(Input.mouseX + Time.now + lvlHandler.trackPieces.Count);
+
+            int randomSkin = random.Next(0, frameCount - 2);
+            Console.WriteLine("Skin index: {0}", randomSkin);
+
+            SetFrame(randomSkin);
             SetOrigin(width / 2, height / 2);
-            SetScaleXY(0.5f, 0.5f);
+            SetScaleXY(scaleFactor, scaleFactor);
             SetXY(xPos, yPos);
         }
     }
