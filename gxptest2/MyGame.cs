@@ -23,6 +23,8 @@ public class MyGame : Game {
 		// Create a full screen canvas (EasyDraw):
 		// (in MyGame, width and height refer to game.width and game.height: the window size)
 		background = new EasyDraw(width, height);
+		background.TextFont(Utils.LoadFont("Pixel-Western.ttf", 10));
+
 		rails = new Sprite("Empty.png", false, false);
 
 		train = new Train("train_sprite-Sheet_v2.png", 3, 3, 8, port);

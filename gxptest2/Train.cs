@@ -32,7 +32,7 @@ class Train : AnimationSprite
     public int trackIndex = 2;
     public int trackCount = 5;
 
-    public bool isAlive;
+    public bool isAlive = true;
     public int health = 3;
 
     public List<int> moveableToTracks = new List<int>();
@@ -50,7 +50,14 @@ class Train : AnimationSprite
 
     private void Update()
     {
-        AnimateFixed();
+        if (isAlive)
+        {
+            AnimateFixed();
+        }
+        else
+        {
+            visible = false;
+        }
 
         genTrack(trackCount);
 

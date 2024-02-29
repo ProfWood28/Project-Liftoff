@@ -48,25 +48,26 @@ class LevelHandler : GameObject
     }
     private void Update()
     {
-        ManageGaps();
+        DeathCheck();
 
-        //Console.Write("Breakables: ");
+        if(train.isAlive)
+        {
+            ManageGaps();
 
-        //for (int i = 0; i < breakableTracks.Count; i++)
-        //{
-        //    Console.Write("{0}; ", breakableTracks[i]);
-        //}
-        //Console.WriteLine("");
-        
-        TrackDebug(true, true);
-        UpdateTracks();
+            TrackDebug(true, true);
+
+            UpdateTracks();
+        }
 
         RunFixedUpdate(Time.deltaTime);
     }
     private void FixedUpdate()
     {
-        levelSpeed += 0.005f;
-        levelDistance += levelSpeed;
+        if(train.isAlive)
+        {
+            levelSpeed += 0.005f;
+            levelDistance += levelSpeed;
+        }
     }
     private void RunFixedUpdate(float deltaTime)
     {
@@ -75,6 +76,18 @@ class LevelHandler : GameObject
         {
             FixedUpdate();
             accumulatedTime -= fixedDeltaTime * 1000;
+        }
+    }
+
+    private void DeathCheck()
+    {
+        if (gapTracks.Contains(train.trackIndex))
+        {
+            int index = gapTracks.IndexOf(train.trackIndex);
+            if (index > 0 && train.x + levelDistance > gapStarts[index] && train.x + levelDistance < gapStarts[index] + gapLengths[index])
+            {
+                train.isAlive = false;
+            }
         }
     }
 
