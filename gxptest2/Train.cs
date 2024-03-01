@@ -38,6 +38,8 @@ class Train : AnimationSprite
 
     SerialPort sPort;
     Vector2 lastJoystick = new Vector2(512, 512);
+    bool[] lastButtons = new bool[] { false, false, false, false, false, false };
+    int[] buttonCodes = new int[] { 0, 0, 0, 0, 0, 0 };
 
     private InputBuffer inputBuffer = new InputBuffer();
     public Train(string fileName, int cols, int rows, int frames, SerialPort SP) : base(fileName, cols, rows, frames)
@@ -97,6 +99,14 @@ class Train : AnimationSprite
         //process all serial inputs
         SerialInput();
 
+        Console.Write("Button Bools: ");
+        foreach (bool buttonPressed in lastButtons)
+        {
+            Console.Write("{0}; ", buttonPressed);
+        }
+
+        Console.WriteLine("");
+
         //compensation for 0 - 1023 --> -512 - 512
         Vector2 adjustedStick = lastJoystick + new Vector2(analogueComp, analogueComp);
 
@@ -116,10 +126,8 @@ class Train : AnimationSprite
 
     private void SerialInput()
     {
-        //toggle serial data stream sending from the controller
-        if (Input.GetKeyDown(Key.X))
+        if(Input.GetKeyDown(Key.X))
         {
-            //by sending any data to the controller
             sPort.Write("1");
         }
 
@@ -131,7 +139,7 @@ class Train : AnimationSprite
         {
             //split data by input, which are seperated by '/'
             string[] inputs = serialInput.Split('/');
-            Console.WriteLine("serial: {0}", serialInput);
+            //Console.WriteLine("serial: {0}", serialInput);
 
             //for each input
             for (int i = 0; i < inputs.Length; i++)
@@ -144,8 +152,6 @@ class Train : AnimationSprite
                 {
                     //extract (x,y) from string, seperated by ','
                     string[] joystickData = inputData[1].Split(',');
-
-                    
 
                     //check if the serial port didn't send any funkey data
                     //this occurs more often than one would think when it constructs the whole string before sending
@@ -187,10 +193,37 @@ class Train : AnimationSprite
                     {
                         int keyCode = Convert.ToInt32(keyCodeString) - 32;
 
-                        Keys key = (Keys)keyCode;
-                        string keyString = key.ToString();
+                        if(keyCode == 88)
+                        {
+                            keyCode = Key.ENTER;
+                        }
 
-                        SendKeys.SendWait(keyString);
+                        int correctButtonPin = -1;
+
+                        for (int a = 0; a < lastButtons.Length; a++)
+                        {
+                            int buttonPin = a + 3;
+
+                            if(buttonInfo.Contains(correctButtonPin.ToString()))
+                            {
+                                correctButtonPin = buttonPin;
+                                break;
+                            }
+                        }
+                        if (correctButtonPin - 3 >= 0)
+                        {
+                            if (keyCode > 0 && lastButtons[correctButtonPin - 3] == false)
+                            {
+                                //Console.WriteLine("is {0} being added as true?", buttonInfo);
+                                lastButtons[correctButtonPin - 3] = true;
+                                buttonCodes[correctButtonPin - 3] = keyCode;
+                            }
+                            else
+                            {
+                                lastButtons[correctButtonPin - 3] = false;
+                                buttonCodes[correctButtonPin - 3] = 0;
+                            }
+                        }
                     }
                 }
 

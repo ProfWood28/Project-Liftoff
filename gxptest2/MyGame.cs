@@ -30,7 +30,7 @@ public class MyGame : Game {
 	public int gameState = -1;
 	public float menuMoveTime = 0;
 
-	public MyGame() : base(1366, 768, true, false, -1, -1, true)     // Create a window that's 1366x768 and IS fullscreen
+	public MyGame() : base(1366, 768, false, false, -1, -1, true)     // Create a window that's 1366x768 and IS fullscreen
 	{
 		targetFps = 144; //needed fsr
 
