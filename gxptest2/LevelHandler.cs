@@ -30,11 +30,14 @@ class LevelHandler : GameObject
     private List<float> gapLengths = new List<float>();
 
     private List<int> tracksTrainCanMoveTo = new List<int> {0,1,2,3,4};
-    
-    public LevelHandler(EasyDraw bgIn, Train trainIn)
+
+    private MyGame gaym;
+
+    public LevelHandler(EasyDraw bgIn, Train trainIn, MyGame gamm)
     {
         train = trainIn;
         bg = bgIn;
+        gaym = gamm;
 
         railStraight = new RailStraight(999, -999, this);
 
@@ -43,23 +46,53 @@ class LevelHandler : GameObject
 
         breakableTracks.Remove(trackIndex);
         gapTracks.Add(trackIndex);
-        gapStarts.Add(game.width*3);
-        gapLengths.Add(random.Next(5, 20)*railStraight.width);
+        gapStarts.Add(game.width * 3);
+        gapLengths.Add(random.Next(5, 20) * railStraight.width);
+        gaym = gamm;
     }
     private void Update()
     {
-        DeathCheck();
-
-        if(train.isAlive)
+        if(gaym.gameState == 0)
         {
-            ManageGaps();
+            DeathCheck();
 
-            TrackDebug(false, false);
+            if (train.isAlive)
+            {
+                ManageGaps();
 
-            UpdateTracks();
+                //yeah I have up on this
+                //detecting an actually impossible track combination is extremely difficult
+                //just call it a ploy for more insurance fraud idk man
+                //ImpossibleTrackFixer();
+
+                TrackDebug(false, false);
+
+                UpdateTracks();
+            }
+
+            RunFixedUpdate(Time.deltaTime);
         }
+        else if (gaym.gameState == -1)
+        {
+            levelSpeed = 3;
+            levelDistance = 0;
+            lastDistance = 0;
+            train.isAlive = true;
+            train.trackIndex = 2;
+            train.x = game.width/2;
 
-        RunFixedUpdate(Time.deltaTime);
+            gapTracks.Clear();
+            gapStarts.Clear();
+            gapLengths.Clear();
+            breakableTracks = new List<int> {0, 1, 2, 3, 4};
+
+            for (int i = 0; i < trackPieces.Count; i++)
+            {
+                trackPieces[i].SetFrame(random.Next(0, trackPieces[i].frameCount - 2));
+                trackPieces[i].y = train.trackHeights[Mathf.Floor((i - 1) / Mathf.Ceiling(game.width * 2 / railStraight.width))];
+                trackPieces[i].x = (i % Mathf.Ceiling(game.width * 2 / railStraight.width)) * (railStraight.width);
+            }
+        }
     }
     private void FixedUpdate()
     {
@@ -84,9 +117,10 @@ class LevelHandler : GameObject
         if (gapTracks.Contains(train.trackIndex))
         {
             int index = gapTracks.IndexOf(train.trackIndex);
-            if (index > 0 && train.x + levelDistance > gapStarts[index] && train.x + levelDistance < gapStarts[index] + gapLengths[index])
+            if (index >= 0 && train.x + levelDistance > gapStarts[index] && train.x + levelDistance < gapStarts[index] + gapLengths[index])
             {
                 train.isAlive = false;
+                gaym.gameState = 1;
             }
         }
     }
@@ -220,34 +254,13 @@ class LevelHandler : GameObject
         
         if(gapTracks.Count < 3)
         {
-            bool noInstaKill = false;
-
-            if(!breakableTracks.Contains(train.trackIndex - 1) && !breakableTracks.Contains(train.trackIndex + 1))
-            {
-                breakableTracks.Remove(train.trackIndex);
-                noInstaKill = true;
-            }
-
             int randomIndex = random.Next(0, breakableTracks.Count);
             int trackIndex = breakableTracks[randomIndex];
-
-            //why the fuck no work
-            //I am going to kill someone
-            //it might be me but alas
-            if(noInstaKill)
-            {
-                breakableTracks.Add(train.trackIndex);
-            }
             
             breakableTracks.Remove(trackIndex);
             gapTracks.Add(trackIndex);
             gapStarts.Add(random.Next(5,20) * railStraight.width + levelDistance + game.width*2);
             gapLengths.Add(random.Next(5, 40) * railStraight.width);
-        }
-
-        if(breakableTracks.Contains(train.trackIndex))
-        {
-            breakableTracks.Remove((train.trackIndex));
         }
 
         if(breakableTracks.Count < train.trackCount)
@@ -280,6 +293,59 @@ class LevelHandler : GameObject
 
         train.moveableToTracks = tracksTrainCanMoveTo;
     }
+
+    //private void ImpossibleTrackFixer()
+    //{
+    //    int i = train.trackIndex;
+        
+    //    bool isIn = gapTracks.Contains(i);
+    //    bool isAbove = gapTracks.Contains(i + 1);
+    //    bool isBelow = gapTracks.Contains(i - 1);
+
+    //    if (isIn && isAbove && i == train.trackCount-1 || isIn && isBelow && i == 0 || isIn && isAbove && isBelow)
+    //    {
+    //        int gapIndex = gapTracks.IndexOf(i);
+    //        float gapStart = gapStarts[gapIndex];
+    //        float gapLength = gapLengths[gapIndex];
+
+    //        float gapStartLower = gapStart;
+    //        float gapLengthLower = gapLength;
+
+    //        if (isBelow)
+    //        {
+    //            int gapIndexLower = gapTracks.IndexOf(i - 1);
+    //            gapStartLower = gapStarts[gapIndexLower];
+    //            gapLengthLower = gapLengths[gapIndexLower];
+    //        }
+
+    //        float gapStartHigher = gapStart;
+    //        float gapLengthHigher = gapLength;
+
+    //        if(isAbove)
+    //        {
+    //            int gapIndexHigher = gapTracks.IndexOf(i + 1);
+    //            gapStartHigher = gapStarts[gapIndexHigher];
+    //            gapLengthHigher = gapLengths[gapIndexHigher];
+    //        }
+                
+
+    //        //---------\\
+
+    //        float highestStart = Math.Max(Math.Max(gapStart, gapStartLower), gapStartHigher);
+    //        float lowestStart = Math.Min(Math.Min(gapStart, gapStartLower), gapStartHigher);
+
+    //        float highestEnd = Math.Max(Math.Max(gapStart + gapLength, gapStartLower + gapLengthLower), gapStartHigher + gapLengthHigher);
+    //        float lowestEnd = Math.Min(Math.Min(gapStart + gapLength, gapStartLower + gapLengthLower), gapStartHigher + gapLengthHigher);
+
+    //        //---------\\
+
+    //        if(highestStart >= lowestEnd)
+    //        {
+    //            Console.WriteLine("It aint happening chief");
+    //        }
+            
+    //    }
+    //}
 
     class RailStraight : AnimationSprite
     {

@@ -29,14 +29,14 @@ class MovingBackground : Sprite
 
         train = trn;
 
-        unit1 = new Sprite(fileName, false, false);
+        unit1 = new Sprite(fileName, true, false);
         unit1.SetOrigin(0.5f, 0.5f);
         unit1.SetScaleXY(scale);
         unit1.x = 0;
         unit1.y = yPos;
         AddChild(unit1);
 
-        unit2 = new Sprite(fileName, false, false);
+        unit2 = new Sprite(fileName, true, false);
         unit2.SetOrigin(0.5f, 0.5f);
         unit2.SetScaleXY(scale);
         unit2.x = unit1.width;
@@ -48,8 +48,6 @@ class MovingBackground : Sprite
 
     private void CycleUnits()
     {
-        Console.WriteLine("Current unit1.x: {0} \nCurrent unit2.x: {1}", unit1.x, unit2.x);
-
         if(unit1.x < 0 - unit1.width)
         {
             unit1.x = unit2.x + unit2.width;

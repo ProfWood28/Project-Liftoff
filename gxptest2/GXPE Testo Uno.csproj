@@ -45,8 +45,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Button.cs" />
     <Compile Include="GXPEngine\Core\Vector2Double.cs" />
     <Compile Include="LevelHandler.cs" />
+    <Compile Include="Menu.cs" />
     <Compile Include="MovingBackground.cs" />
     <Compile Include="Old Stuff\EntityController.cs" />
     <Compile Include="GXPEngine\AddOns\Camera.cs" />

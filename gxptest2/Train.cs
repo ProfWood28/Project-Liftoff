@@ -21,7 +21,7 @@ class Train : AnimationSprite
     public float mass = 2000f;
     public bool grounded = false;
     public float friction = 0.15f;
-    public float moveForce = 2500f;
+    public float moveForce = 3500f;
     public float noControlBreak = 500f;
 
     public float fixedDeltaTime = 0.02f;
@@ -33,7 +33,6 @@ class Train : AnimationSprite
     public int trackCount = 5;
 
     public bool isAlive = true;
-    public int health = 3;
 
     public List<int> moveableToTracks = new List<int>();
 
@@ -50,20 +49,16 @@ class Train : AnimationSprite
 
     private void Update()
     {
+        HandleInput();
+
         if (isAlive)
         {
             AnimateFixed();
-        }
-        else
-        {
-            visible = false;
+
+            RunFixedUpdate(Time.deltaTime);
         }
 
         genTrack(trackCount);
-
-        HandleInput();
-
-        RunFixedUpdate(Time.deltaTime);
     }
     private void FixedUpdate()
     {
