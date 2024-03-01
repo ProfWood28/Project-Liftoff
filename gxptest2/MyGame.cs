@@ -30,7 +30,7 @@ public class MyGame : Game {
 	public int gameState = -1;
 	public float menuMoveTime = 0;
 
-	public MyGame() : base(1366, 768, false, false, -1, -1, true)     // Create a window that's 1366x768 and ISnt fullscreen
+	public MyGame() : base(1366, 768, true, false, -1, -1, true)     // Create a window that's 1366x768 and IS fullscreen
 	{
 		targetFps = 144; //needed fsr
 
@@ -53,7 +53,7 @@ public class MyGame : Game {
 		scoreBG.SetXY(10, -50);
 		scoreBG.SetScaleXY(0.35f, 0.35f);
 
-		bgSkybox = new MovingBackground("sky_background1.png", 1f, 0, -0.3f, levelHandler, train);
+		bgSkybox = new MovingBackground("Sky2_background1.png", 1f, 0, -0.3f, levelHandler, train);
 		bgBackground = new MovingBackground("BackgroundSand_background2.png", 1f, 0, -0.6f, levelHandler, train);
 		bgForeground = new MovingBackground("foregroundSand_background3.png", 1f, 0, -1f, levelHandler, train);
 

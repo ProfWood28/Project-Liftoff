@@ -11,6 +11,8 @@ class Menu : Sprite
     List<Button> buttons = new List<Button>();
     MyGame gamm;
 
+    int buttonIndex = 0;
+
     public Menu(string fileName, float scale, string[] buttonFiles, Vector2[] buttonPositons, int[] buttonSends, float[] buttonScales, MyGame gaym) : base (fileName, false)
     {
         SetXY(0, 0);
@@ -43,16 +45,26 @@ class Menu : Sprite
 
             if(button.visible)
             {
-                bool buttonHover = button.HitTestPoint(Input.mouseX, Input.mouseY);
+                bool buttonHover = button == buttons[buttonIndex];
 
                 int highLight = buttonHover ? 1 : 0;
                 button.SetFrame(highLight);
 
-                if (buttonHover && Input.GetMouseButtonDown(0))
+                if (buttonHover && Input.GetKeyDown(Key.ENTER))
                 {
                     gamm.gameState = button.send;
                 }
             }    
+        }
+
+        if (Input.AnyKeyDown() && visible)
+        {
+            int moveDir = Math.Sign(Input.GetAxisDown(Key.W, Key.S) + Input.GetAxisDown(Key.UP, Key.DOWN));
+            buttonIndex = Mathf.Round(Mathf.Clamp(buttonIndex + moveDir, 0, buttons.Count - 1));
+        }
+        else if (!visible)
+        {
+            buttonIndex = 0;
         }
     }
 }

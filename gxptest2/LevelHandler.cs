@@ -46,7 +46,7 @@ class LevelHandler : GameObject
 
         breakableTracks.Remove(trackIndex);
         gapTracks.Add(trackIndex);
-        gapStarts.Add(game.width * 3);
+        gapStarts.Add(game.width * 2);
         gapLengths.Add(random.Next(5, 20) * railStraight.width);
         gaym = gamm;
     }
