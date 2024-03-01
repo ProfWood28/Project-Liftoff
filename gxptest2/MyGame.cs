@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using GXPEngine;					// GXPEngine contains the engine
 using GXPEngine.Core;               // cannot be bothered to type Core.Vector2 every goddamn time
 using System.IO.Ports;              // serial ports wooooooooooooooooooooooooooooooooooooooo
-using System.Runtime;
 
 public class MyGame : Game {
 	// Declare the Sprite variables:
@@ -18,8 +17,11 @@ public class MyGame : Game {
 	MovingBackground bgForeground;
 	MovingBackground bgSkybox;
 
+	Sprite scoreBG;
+
 	Menu mainMenu;
 	Menu gameOver;
+	Menu highScore;
 
 	EasyDraw textLayer;
 
@@ -47,12 +49,17 @@ public class MyGame : Game {
 
 		levelHandler = new LevelHandler(textLayer, train, this);
 
+		scoreBG = new Sprite("Current_Score_Counnter.png");
+		scoreBG.SetXY(10, -50);
+		scoreBG.SetScaleXY(0.35f, 0.35f);
+
 		bgSkybox = new MovingBackground("sky_background1.png", 1f, 0, -0.3f, levelHandler, train);
 		bgBackground = new MovingBackground("BackgroundSand_background2.png", 1f, 0, -0.6f, levelHandler, train);
 		bgForeground = new MovingBackground("foregroundSand_background3.png", 1f, 0, -1f, levelHandler, train);
 
 		mainMenu = new Menu("MenuUi.png", 1, new string[] { "Start_Button_Highlight.png", "Score_Button_Highlight.png" }, new Vector2[] {new Vector2(width/2-255, 232), new Vector2(width / 2 - 255, 338) }, new int[] {0, 2}, new float[] {1, 1}, this);
-		gameOver = new Menu("EndScreen.png", 1, new string[] { "ContinueButton.png" }, new Vector2[] { new Vector2(width / 2-255, 457) }, new int[] { -1 }, new float[] { 1 }, this);
+		gameOver = new Menu("EndScreen.png", 1, new string[] { "Continue_Button_MK2.png" }, new Vector2[] { new Vector2(width / 2-255, 457) }, new int[] { -1 }, new float[] { 1 }, this);
+		highScore = new Menu("ScoreBoard.png", 1, new string[] { "Return_Button.png" }, new Vector2[] { new Vector2(-10, height-75)}, new int[] { -1 }, new float[] { 0.5f }, this);
 
 		// Add all sprites to the engine, so that they will be displayed every frame:
 		// (The order that we add them is the order that they will be drawn.)
@@ -67,8 +74,11 @@ public class MyGame : Game {
 		AddChild(train);
 		AddChild(levelHandler);
 
+		AddChild(scoreBG);
+
 		AddChild(gameOver);
 		AddChild(mainMenu);
+		AddChild(highScore);
 
 		AddChild(textLayer);
 
@@ -89,7 +99,10 @@ public class MyGame : Game {
 		{
 			textLayer.Text(String.Format("FPS: {0}", 1000 / Time.deltaTime), width - 100, 40);
 			//background.Text(String.Format("levelSpeed: {0}", levelHandler.levelSpeed), 40, 40);
-			textLayer.Text(String.Format("Score: {0}", Mathf.Round(levelHandler.levelDistance)), 10, 40);
+
+			//only display score in gamescreen
+			string score = gameState == 0 || gameState == 1 ? String.Format("{0}", Mathf.Round(levelHandler.levelDistance)) : "";
+			textLayer.Text(score, 195, 65);
 		}
 	}
 
@@ -97,36 +110,68 @@ public class MyGame : Game {
 	{ 
 		if(gameState == -1) // main menu
         {
+			train.visible = false;
+			rails.visible = false;
+			scoreBG.visible = false;
+
 			mainMenu.visible = true;
+			mainMenu.y = 0;
 
 			menuMoveTime = 0;
 			gameOver.visible = false;
 			gameOver.y = -height;
+
+			highScore.visible = false;
+			highScore.y = -height;
         }
         else if(gameState == 0) // game
         {
+			train.visible = true;
+			rails.visible = true;
+			scoreBG.visible = true;
+
 			mainMenu.visible = false;
+			mainMenu.y = -height;
 
 			menuMoveTime = 0;
 			gameOver.y = -height;
 			gameOver.visible = false;
-        }
+
+			highScore.visible = false;
+			highScore.y = -height;
+		}
         else if (gameState == 1) // retry
         {
+			train.visible = true;
+			rails.visible = true;
+			scoreBG.visible = true;
+
 			mainMenu.visible = false;
+			mainMenu.y = -height;
 
 			float timeToReach = 0.75f;
 			menuMoveTime += Time.deltaTime / (timeToReach*1000);
-			Console.WriteLine("gameOver.y: {0}", gameOver.y);
 			gameOver.y = Lerp(-height, 0, menuMoveTime);
 			gameOver.visible = true;
-        }
+
+			highScore.visible = false;
+			highScore.y = -height;
+		}
 		else // highscores
         {
-			menuMoveTime = 0;
-			gameOver.y = -height;
+			train.visible = false;
+			rails.visible = false;
+			scoreBG.visible = false;
+
+			highScore.visible = true;
+			highScore.y = 0;
+
+			mainMenu.y = -height;
 			mainMenu.visible = false;
+
+			menuMoveTime = 0;
 			gameOver.visible = false;
+			gameOver.y = -height;
 		}
 	}
 
