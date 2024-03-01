@@ -262,6 +262,45 @@ class Train : AnimationSprite
         velocity += accel;
 
         velocity = velocity * (velocity.sqrMagnitude() < 0.05f ? 0 : 1);
+
+        OffscreenPrevention();
+    }
+
+    private void OffscreenPrevention()
+    {
+        int minDistanceFromSide = 150;
+        int slowingStart = 300;
+
+        float sideMax = (x - game.width / 2 < 0 ? 0 : game.width);
+
+        float distanceToSlow = Mathf.Abs(sideMax - slowingStart);
+        float distanceToMin = Mathf.Abs(sideMax - minDistanceFromSide);
+
+        float progress = 1.0f;
+
+        if ((x < distanceToSlow && sideMax < game.width/2) || (x > distanceToSlow && sideMax > game.width/2))
+        {
+            float vTerminal = Mathf.Sqrt(moveForce / friction);
+            
+
+            if(sideMax < game.width / 2)
+            {
+                progress = 1.0f - (Mathf.Abs(x - distanceToSlow) / distanceToMin);
+            }
+            else
+            {
+                progress = 1.0f - (Mathf.Abs(x - distanceToSlow) / (game.width - distanceToMin));
+            }
+
+            float vMax = vTerminal * progress;
+            float absoluteSpeed = (float)velocity.Magnitude();
+            int directionality = Math.Sign(velocity.x);
+            float adjustedSpeed = Mathf.Clamp(absoluteSpeed, 0, vMax) * directionality;
+
+            velocity = new Vector2Double(adjustedSpeed, velocity.y);
+        }
+
+        //Console.WriteLine("trainSlow: {0} \ntrainMin: {1}", trainToSlow, trainToMin);
     }
 
     private void ApplyVelocity()

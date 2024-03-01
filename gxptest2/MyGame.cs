@@ -2,7 +2,7 @@ using System;						// System contains a lot of default C# libraries
 using System.Collections.Generic;
 using GXPEngine;					// GXPEngine contains the engine
 using GXPEngine.Core;               // cannot be bothered to type Core.Vector2 every goddamn time
-using System.IO.Ports;
+using System.IO.Ports;				// serial ports wooooooooooooooooooooooooooooooooooooooo
 
 public class MyGame : Game {
 	// Declare the Sprite variables:
@@ -12,6 +12,10 @@ public class MyGame : Game {
 	Train train;
 
 	public Sprite rails;
+
+	MovingBackground bgBackground;
+	MovingBackground bgForeground;
+	MovingBackground bgSkybox;
 
 	public static SerialPort port = new SerialPort();
 
@@ -33,10 +37,20 @@ public class MyGame : Game {
 
 		levelHandler = new LevelHandler(background, train);
 
+		bgSkybox = new MovingBackground("sky_background1.png", 1f, 0, -0.3f, levelHandler, train);
+		bgBackground = new MovingBackground("BackgroundSand_background2.png", 1f, 0, -0.6f, levelHandler, train);
+		bgForeground = new MovingBackground("foregroundSand_background3.png", 1f, 0, -1f, levelHandler, train);
+
 		// Add all sprites to the engine, so that they will be displayed every frame:
 		// (The order that we add them is the order that they will be drawn.)
 		AddChild(background);
+
+		AddChild(bgSkybox);
+		AddChild(bgBackground);
+		AddChild(bgForeground);
+
 		AddChild(rails);
+
 		AddChild(train);
 		AddChild(levelHandler);
 
@@ -53,8 +67,8 @@ public class MyGame : Game {
 		if (Time.deltaTime != 0)
 		{
 			background.Text(String.Format("FPS: {0}", 1000 / Time.deltaTime), width - 100, 40);
-			background.Text(String.Format("levelSpeed: {0}", levelHandler.levelSpeed), 40, 40);
-			background.Text(String.Format("levelDistance: {0}", levelHandler.levelDistance), 40, 80);
+			//background.Text(String.Format("levelSpeed: {0}", levelHandler.levelSpeed), 40, 40);
+			background.Text(String.Format("levelDistance: {0}", Mathf.Round(levelHandler.levelDistance)), 40, 40);
 		}
 	}
 

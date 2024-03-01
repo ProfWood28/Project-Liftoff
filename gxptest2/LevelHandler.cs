@@ -22,7 +22,7 @@ class LevelHandler : GameObject
     private RailStraight railStraight;
     private List<RailStraight> trackPieces = new List<RailStraight>();
 
-    private float lastDistance = 0;
+    public float lastDistance = 0;
 
     private List<int> breakableTracks = new List<int>() {0,1,2,3,4};
     private List<int> gapTracks = new List<int>();
@@ -54,7 +54,7 @@ class LevelHandler : GameObject
         {
             ManageGaps();
 
-            TrackDebug(true, true);
+            TrackDebug(false, false);
 
             UpdateTracks();
         }
@@ -97,7 +97,7 @@ class LevelHandler : GameObject
         {
             //Console.WriteLine("Added traintrack to track index: {0}", trackPieces.Count % 5);
             RailStraight newTrack = new RailStraight(train.trackHeights[Mathf.Floor((trackPieces.Count - 1) / Mathf.Ceiling(game.width * 2 / railStraight.width))], (trackPieces.Count % Mathf.Ceiling(game.width*2 / railStraight.width)) * (railStraight.width), this);
-            game.GetChildren()[1].LateAddChild(newTrack);
+            game.GetChildren()[4].LateAddChild(newTrack);
             trackPieces.Add(newTrack);
             //Console.WriteLine("Spawned trackpiece ({1}, {2}), now total is {0}", trackPieces.Count, newTrack.x, newTrack.y);
         }

@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="GXPEngine\Core\Vector2Double.cs" />
     <Compile Include="LevelHandler.cs" />
+    <Compile Include="MovingBackground.cs" />
     <Compile Include="Old Stuff\EntityController.cs" />
     <Compile Include="GXPEngine\AddOns\Camera.cs" />
     <Compile Include="GXPEngine\AddOns\Gizmos.cs" />
