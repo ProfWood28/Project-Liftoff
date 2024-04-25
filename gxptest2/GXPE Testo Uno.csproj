@@ -48,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Button.cs" />
+    <Compile Include="GXPEngine\Bomber.cs" />
     <Compile Include="GXPEngine\Core\Vector2Double.cs" />
     <Compile Include="LevelHandler.cs" />
     <Compile Include="Menu.cs" />

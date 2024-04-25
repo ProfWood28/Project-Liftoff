@@ -50,7 +50,7 @@ class Menu : Sprite
                 int highLight = buttonHover ? 1 : 0;
                 button.SetFrame(highLight);
 
-                if (buttonHover && Input.GetKeyDown(Key.ENTER))
+                if (buttonHover && Input.GetKeyDown(Key.SPACE))
                 {
                     gamm.gameState = button.send;
                 }

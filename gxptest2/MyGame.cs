@@ -11,6 +11,12 @@ public class MyGame : Game {
 	LevelHandler levelHandler;
 	Train train;
 
+	Bomber bomber;
+
+	Sprite bombStuffs;
+	Sprite targetStuffs;
+	Sprite kaboomStuffs;
+
 	public Sprite rails;
 
 	MovingBackground bgBackground;
@@ -47,7 +53,13 @@ public class MyGame : Game {
 		train.SetXY(width/2, height/2);
 		train.SetScaleXY(0.66f, 0.66f);
 
-		levelHandler = new LevelHandler(textLayer, train, this);
+		bombStuffs = new Sprite("Empty.png", false, false);
+		targetStuffs = new Sprite("Empty.png", false, false);
+		kaboomStuffs = new Sprite("Empty.png", false, false);
+
+		bomber = new Bomber("bandit_cart-spritesheet.png", 4, 4, 15, train, bombStuffs, targetStuffs, kaboomStuffs, this);
+
+		levelHandler = new LevelHandler(textLayer, train, this, bomber);
 
 		scoreBG = new Sprite("Current_Score_Counnter.png");
 		scoreBG.SetXY(10, -50);
@@ -69,7 +81,14 @@ public class MyGame : Game {
 		AddChild(bgBackground);
 		AddChild(bgForeground);
 
+		//DO NOT MOVE THIS
 		AddChild(rails);
+
+		AddChild(bombStuffs);
+		AddChild(targetStuffs);
+		AddChild(kaboomStuffs);
+
+		AddChild(bomber);
 
 		AddChild(train);
 		AddChild(levelHandler);
@@ -113,6 +132,7 @@ public class MyGame : Game {
 			train.visible = false;
 			rails.visible = false;
 			scoreBG.visible = false;
+			bomber.visible = false;
 
 			mainMenu.visible = true;
 			mainMenu.y = 0;
@@ -123,12 +143,29 @@ public class MyGame : Game {
 
 			highScore.visible = false;
 			highScore.y = -height;
-        }
+
+			foreach(Bomb b in bombStuffs.GetChildren())
+            {
+				bombStuffs.RemoveChild(b);
+            }
+			foreach (Kaboom k in kaboomStuffs.GetChildren())
+			{
+				kaboomStuffs.RemoveChild(k);
+			}
+			foreach (Target t in targetStuffs.GetChildren())
+			{
+				targetStuffs.RemoveChild(t);
+			}
+
+			bomber.nAttacked = 0;
+			bomber.nLastAttack = 0;
+		}
         else if(gameState == 0) // game
         {
 			train.visible = true;
 			rails.visible = true;
 			scoreBG.visible = true;
+			bomber.visible = true;
 
 			mainMenu.visible = false;
 			mainMenu.y = -height;
@@ -145,6 +182,7 @@ public class MyGame : Game {
 			train.visible = true;
 			rails.visible = true;
 			scoreBG.visible = true;
+			bomber.visible = true;
 
 			mainMenu.visible = false;
 			mainMenu.y = -height;
@@ -156,12 +194,29 @@ public class MyGame : Game {
 
 			highScore.visible = false;
 			highScore.y = -height;
+
+			foreach (Bomb b in bombStuffs.GetChildren())
+			{
+				bombStuffs.RemoveChild(b);
+			}
+			foreach (Kaboom k in kaboomStuffs.GetChildren())
+			{
+				kaboomStuffs.RemoveChild(k);
+			}
+			foreach (Target t in targetStuffs.GetChildren())
+			{
+				targetStuffs.RemoveChild(t);
+			}
+
+			bomber.nAttacked = 0;
+			bomber.nLastAttack = 0;
 		}
 		else // highscores
         {
 			train.visible = false;
 			rails.visible = false;
 			scoreBG.visible = false;
+			bomber.visible = false;
 
 			highScore.visible = true;
 			highScore.y = 0;
@@ -210,4 +265,5 @@ public class MyGame : Game {
 		t = Math.Max(0, Math.Min(1, t));
 		return a + (b - a) * t;
 	}
+
 }

@@ -32,12 +32,14 @@ class LevelHandler : GameObject
     private List<int> tracksTrainCanMoveTo = new List<int> {0,1,2,3,4};
 
     private MyGame gaym;
+    private Bomber bmbr;
 
-    public LevelHandler(EasyDraw bgIn, Train trainIn, MyGame gamm)
+    public LevelHandler(EasyDraw bgIn, Train trainIn, MyGame gamm, Bomber bbr)
     {
         train = trainIn;
         bg = bgIn;
         gaym = gamm;
+        bmbr = bbr;
 
         railStraight = new RailStraight(999, -999, this);
 
@@ -54,13 +56,18 @@ class LevelHandler : GameObject
     {
         if(gaym.gameState == 0)
         {
+            if(bmbr.lastRun < 300)
+            {
+                bmbr.lastRun = Time.time;
+            }
+
             DeathCheck();
 
             if (train.isAlive)
             {
                 ManageGaps();
 
-                //yeah I have up on this
+                //yeah I gave up on this
                 //detecting an actually impossible track combination is extremely difficult
                 //just call it a ploy for more insurance fraud idk man
                 //ImpossibleTrackFixer();
@@ -77,9 +84,13 @@ class LevelHandler : GameObject
             levelSpeed = 3;
             levelDistance = 0;
             lastDistance = 0;
+            
             train.isAlive = true;
             train.trackIndex = 2;
             train.x = game.width/2;
+
+            bmbr.lastRun = 0;
+            bmbr.x = -200;
 
             gapTracks.Clear();
             gapStarts.Clear();
@@ -357,7 +368,7 @@ class LevelHandler : GameObject
             random = new Random(Input.mouseX + Time.now + lvlHandler.trackPieces.Count);
 
             int randomSkin = random.Next(0, frameCount - 2);
-            Console.WriteLine("Skin index: {0}", randomSkin);
+            //Console.WriteLine("Skin index: {0}", randomSkin);
 
             SetFrame(randomSkin);
             SetOrigin(width / 2, height / 2);
